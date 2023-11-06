@@ -1,0 +1,321 @@
+{extend name="base" /}
+{block name="resources"}
+    <style>
+        #LAY_app {zoom: .96;}
+        .layui-form-calculate {
+            width: 620px;
+        }
+        .layui-form-calculate .layui-form-label {
+            width: 100px;
+            text-align: left;
+        }
+        .layui-form-calculate .layui-form-item {
+            margin-bottom: 0;
+            display: flex;
+            flex: 24 1 auto;
+        }
+        .layui-form-calculate .layui-form-item .layui-input {
+            text-align: center;
+            padding-left: 0px;
+        }
+        .layui-form-calculate .layui-form-item ::-webkit-inner-spin-button,
+        .layui-form-calculate .layui-form-item ::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .layui-form-calculate .layui-form-header .layui-input {
+            padding: 0 16px;
+            height: 50px;
+            line-height: 50px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+        }
+        .layui-form-calculate .layui-form-header .layui-input::placeholder {
+            color: #666;
+        }
+        .layui-form-calculate .layui-form-header .layui-form-mid {
+            position: absolute;
+            right: 0px;
+            top: 10px;
+            right: 5px;
+            color: #999;
+        }
+        .layui-form-calculate .layui-form-item.layui-form-header {
+            display: unset;
+            margin-bottom: 15px;
+        }
+        .layui-form-calculate .layui-form-item.layui-form-header .layui-input {
+            text-align: unset;
+        }
+        .layui-form-calculate .layui-form-item .layui-inline {
+            background-color: #f0f0f0;
+            margin-right: 6px;
+            padding: 12px 0;
+            margin-bottom: 6px;
+            border-radius: 4px;
+        }
+        .layui-form-calculate .layui-form-item .layui-inline.layui-commit {
+            flex: 1;
+            flex-grow: 1;
+            border: 0px;
+            color: white;
+            background: #8558fa;
+        }
+        .layui-form-calculate .layui-form-item button.layui-inline {
+            margin-right: 0px;
+        }
+        .layui-form-calculate .layui-form-item button.layui-inline:focus {
+            border: 1px solid #333!important;
+        }
+        .layui-form-calculate .layui-input-inline {
+            width: 100px;
+        }
+        .layui-avatar {
+            width: 32px;
+            height: 32px;
+            overflow: hidden;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+            margin-top: -4px;
+        }
+        .layui-avatar img {
+            max-height: 100%;
+            object-fit: contain;
+            vertical-align: unset;
+        }
+        .layui-avatar + cite {
+            display: inline-block;
+            height: 28px;
+            line-height: 28px;
+            padding: 0 12px 0 6px;
+            margin-right: 6px;
+        }
+
+        @media screen and (max-width: 641px) {
+            .layui-form-calculate {
+                width: 100%;
+            }
+            .layui-form-calculate .layui-form-label {
+                padding: 6px;
+            }
+            .layui-form-calculate .layui-input-inline {
+                margin-bottom: 0px;
+            }
+            .layui-form-calculate .layui-form-item button[type=reset],
+            .layui-form-calculate .layui-form-item .layui-inline.layui-commit {
+                width: 120px;
+                flex: unset;
+            }
+        }
+    </style>
+{/block}
+{block name="body"}
+<div id="LAY_app">
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <!-- 头部区域 -->
+            <ul class="layui-nav layui-layout-left">
+                <li class="layui-nav-item layadmin-flexible" lay-unselect>
+                    <a href="javascript:;" layadmin-event="flexible" title="侧边伸缩">
+                        <i class="layui-icon layui-icon-shrink-right" id="LAY_app_flexible"></i>
+                    </a>
+                </li>
+                <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                    <a href="/" target="_blank" title="前台">
+                        <i class="layui-icon layui-icon-website"></i>
+                    </a>
+                </li>
+                <li class="layui-nav-item" lay-unselect>
+                    <a href="javascript:;" layadmin-event="refresh" title="刷新">
+                        <i class="layui-icon layui-icon-refresh-3"></i>
+                    </a>
+                </li>
+            </ul>
+            <ul class="layui-nav layui-layout-right" lay-filter="layadmin-layout-right">
+                <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                    <a href="javascript:;" layadmin-event="theme">
+                        <i class="layui-icon layui-icon-theme"></i>
+                    </a>
+                </li>
+                <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                    <a href="javascript:;" layadmin-event="fullscreen">
+                        <i class="layui-icon layui-icon-screen-full"></i>
+                    </a>
+                </li>
+                <li class="layui-nav-item" lay-unselect>
+                    <a href="javascript:;">
+                        <i class="layui-avatar"><img src="{$admin.attr.avatar}" alt="{$admin.attr.realname}" /></i>
+                        <cite>{$admin.attr.realname}</cite>
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" onclick="editPwd();">修改密码</a></dd>
+                        <dd><a href="javascript:;" onclick="clearCache();">清除缓存</a></dd>
+                        <dd><a href="javascript:;" onclick="logout();">退出</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+        <!-- 侧边菜单 -->
+        <div class="layui-side layui-side-menu">
+            <div class="layui-side-scroll">
+                <div class="layui-logo" style="background-size: 20px 20px; text-align: unset; text-indent: 1.8rem;">
+                    <span>云服务管理</span>
+                </div>
+
+                <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
+                    <li data-name="template" class="layui-nav-item">
+                        <a href="javascript:;" lay-tips="系统管理" lay-direction="2">
+                            <i class="layui-icon layui-icon-app"></i>
+                            <cite>系统配置</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            {if checkAccess('sysConfigBasic') || checkAccess('sysConfigConnect') || checkAccess('sysConfigPay') || checkAccess('sysConfigMail') || checkAccess('sysConfigVip')}
+                            <dd><a lay-href="{:url('sysConfig')}">参数配置</a></dd>
+                            {/if}
+                            {if checkAccess('sysUser') || checkAccess('sysGroup') || checkAccess('sysRole') || checkAccess('sysRule')}
+                            <dd><a lay-href="{:url('sysSecurity')}">账户安全</a></dd>
+                            {/if}
+                            {if checkAccess('sysLogsOperator') || checkAccess('sysLogsLogin') || checkAccess('sysLogsTemplate')}
+                            <dd><a lay-href="{:url('sysLogs')}">日志管理</a></dd>
+                            {/if}
+                        </dl>
+                    </li>
+                    <li data-name="template" class="layui-nav-item">
+                        <a href="javascript:;" lay-tips="用户管理" lay-direction="2">
+                            <i class="layui-icon layui-icon-user"></i>
+                            <cite>品类客户</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            {if checkAccess('category')}
+                            <dd><a lay-href="{:url('category')}">品类管理</a></dd>
+                            {/if}
+                            {if checkAccess('craft')}
+                            <dd><a lay-href="{:url('craft')}">工艺管理</a></dd>
+                            {/if}
+                            {if checkAccess('member')}
+                            <dd><a lay-href="{:url('member')}">客户列表</a></dd>
+                            {/if}
+                        </dl>
+                    </li>
+                    <li data-name="template" class="layui-nav-item">
+                        <a href="javascript:;" lay-tips="订单配送" lay-direction="2">
+                            <i class="layui-icon layui-icon-chart"></i>
+                            <cite>订单配送</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            {if checkAccess('order')}
+                            <dd><a lay-href="{:url('order')}">订单管理</a></dd>
+                            {/if}
+                            {if checkAccess('delivery')}
+                            <dd><a lay-href="{:url('delivery')}">配送列表</a></dd>
+                            {/if}
+                            {if checkAccess('orderDeliveryManger')}
+                            <dd><a lay-href="{:url('orderDeliveryManger')}">配送管理</a></dd>
+                            {/if}
+                            {if checkAccess('supplement')}
+                            <dd><a lay-href="{:url('supplement')}">补单记录</a></dd>
+                            {/if}
+                            {if checkAccess('orderLabelManager')}
+                            <dd><a lay-href="{:url('orderLabelManager')}">标签打印</a></dd>
+                            {/if}
+                            {if checkAccess('orderConverge')}
+                            <dd><a lay-href="{:url('orderConverge')}">订单汇总</a></dd>
+                            {/if}
+                        </dl>
+                    </li>
+                    <li data-name="template" class="layui-nav-item">
+                        <a href="javascript:;" lay-tips="财务管理" lay-direction="2">
+                            <i class="layui-icon layui-icon-dollar"></i>
+                            <cite>财务管理</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            {if checkAccess('financePayments')}
+                            <dd><a lay-href="{:url('financePayments')}">收款明细</a></dd>
+                            {/if}
+                        </dl>
+                        <dl class="layui-nav-child">
+                            {if checkAccess('financeReceivable')}
+                            <dd><a lay-href="{:url('financeReceivable')}">应收账款</a></dd>
+                            {/if}
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- 页面标签 -->
+        <div class="layadmin-pagetabs" id="LAY_app_tabs">
+            <div class="layui-icon layadmin-tabs-control layui-icon-prev" layadmin-event="leftPage"></div>
+            <div class="layui-icon layadmin-tabs-control layui-icon-next" layadmin-event="rightPage"></div>
+            <div class="layui-icon layadmin-tabs-control layui-icon-down">
+                <ul class="layui-nav layadmin-tabs-select" lay-filter="layadmin-pagetabs-nav">
+                    <li class="layui-nav-item" lay-unselect>
+                        <a href="javascript:;"></a>
+                        <dl class="layui-nav-child layui-anim-fadein">
+                            <dd layadmin-event="closeThisTabs"><a href="javascript:;">关闭当前标签页</a></dd>
+                            <dd layadmin-event="closeOtherTabs"><a href="javascript:;">关闭其它标签页</a></dd>
+                            <dd layadmin-event="closeAllTabs"><a href="javascript:;">关闭全部标签页</a></dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+            <div class="layui-tab" lay-unauto lay-allowClose="true" lay-filter="layadmin-layout-tabs">
+                <ul class="layui-tab-title" id="LAY_app_tabsheader">
+                    <li lay-id="{:url('sysIndex')}" lay-attr="{:url('sysIndex')}" class="layui-this"><i class="layui-icon layui-icon-home"></i></li>
+                </ul>
+            </div>
+        </div>
+        <!-- 主体内容 -->
+        <div class="layui-body" id="LAY_app_body">
+            <div class="layadmin-tabsbody-item layui-show">
+                <iframe src="{:url('sysDashboard')}" frameborder="0" class="layadmin-iframe"></iframe>
+            </div>
+        </div>
+        <!-- 辅助元素，一般用于移动设备下遮罩 -->
+        <div class="layadmin-body-shade" layadmin-event="shade"></div>
+    </div>
+</div>
+{/block}
+{block name="scripts"}
+<script type="text/javascript">
+    var app = { value: null };
+
+    layui.config({
+        base: '/static/admin/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'form', 'util']);
+
+    function editPwd() {
+        layer.open({
+            type: 2,
+            title: '修改密码',
+            shade: 0.6,
+            area: ['40%', '50%'],
+            content: '{:url("sysUserSecurity")}'
+        });
+    }
+
+    function clearCache() {
+        layer.load(2),
+        layui.$.getJSON("{:url('sysClearCache')}", r => {
+            layer.closeAll(),
+            r.code != 0 ? layer.alert(r.message) : parent.layer.msg("SUCCESS");
+        })
+    }
+
+    function logout() {
+        layui.$.ajax({
+            type: 'POST',
+            url: "{:url('sysLogout')}",
+            dataType: 'json',
+            beforeSend: () => layer.load(2),
+            success: r => {
+                if (r.code === 0) {
+                    location.reload();
+                }
+            }
+        })
+    }
+</script>
+{/block}

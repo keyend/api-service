@@ -1,0 +1,13 @@
+/.idea
+/.vscode
+/runtime
+/public/uploads
+
+*.log
+.env
+/public/worduploads
+/README.md
+/db_order.sql
+/db_order.sql
+/UPGRADE.md
+/upgrade

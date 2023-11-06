@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<meta charset="UTF-8">
+<head>
+  <script src="./tinymce/tinymce.min.js"></script>
+  <script>
+  tinymce.init({
+	  selector: 'textarea',
+	  language: 'zh_CN',
+	  height: 500,
+	  theme: 'modern',
+	  plugins: 'powerpaste print preview fullpage searchreplace autolink directionality code visualblocks visualchars fullscreen image link media template codesample table charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists textcolor wordcount spellchecker imagetools media contextmenu colorpicker textpattern help',
+	  toolbar1: 'formatselect | bold italic strikethrough forecolor backcolor | link | alignleft aligncenter alignright alignjustify  | numlist bullist outdent indent  | removeformat',
+	  //黏贴功能
+	  powerpaste_word_import: 'propmt',// 参数可以是propmt, merge, clear，效果自行切换对比
+      powerpaste_html_import: 'propmt',// propmt, merge, clear
+      powerpaste_allow_local_images: true,
+      paste_data_images: true,
+      //上传图片功能
+      automatic_uploads: true,//自动上传	
+	  image_advtab: true,//开启图片上传的高级选项功能
+      image_title: true, // 是否开启图片标题设置的选择，这里设置否
+      images_upload_url: 'http://localhost:8080/weixin/createOrder/uploadPic',//上传图片地址
+      /* file_picker_callback: function(callback, value, meta) {
+        // Provide image and alt text for the image dialog
+        if (meta.filetype == 'image') {
+          // 触发input的click事件，并取得file对象
+          // 进行ajax上传图片
+          // 在上传成功的回调函数中，调用callback(uploadedImageUrl);
+          console.info(123);
+        }
+      }, */
+      images_upload_handler: function (blobInfo, success, failure) {
+   	    var xhr, formData;
+   	    xhr = new XMLHttpRequest();
+   	    xhr.withCredentials = false;
+   	    xhr.open('POST', 'http://localhost:8080/weixin/createOrder/uploadPic');
+   	    xhr.onload = function() {
+   	      var json;
+
+   	      if (xhr.status != 200) {
+   	        failure('HTTP Error: ' + xhr.status);
+   	        return;
+   	      }
+
+   	      json = JSON.parse(xhr.responseText);
+		  console.info(json);
+   	      if (!json || typeof json.data[0] != 'string') {
+   	        failure('Invalid JSON: ' + xhr.responseText);
+   	        return;
+   	      }
+   	      success(json.data[0]);
+   	    };
+		console.info(blobInfo.filename());
+   	    formData = new FormData();
+   	    formData.append('file', blobInfo.blob(), blobInfo.filename());
+		if(blobInfo.blob().type.indexOf("image")>-1){//确保文件 避免是.bat
+			xhr.send(formData);
+		}
+   	  },
+      /* images_dataimg_filter: function(img) {
+    	  console.info(img);
+    	  return img.hasAttribute('internal-blob');
+      }, */
+      /* images_reuse_filename: true, */
+	 /*  templates: [
+	    { title: 'Test template 1', content: 'Test 1' },
+	    { title: 'Test template 2', content: 'Test 2' }
+	  ], */
+	  /* content_css: [
+	    '//fonts.googleapis.com/css?family=Lato:300,300i,400,400i',
+	    '//www.tinymce.com/css/codepen.min.css'
+	  ] */
+	 });
+
+  </script>
+</head>
+<body>
+  <div id="f"><textarea id="ssg">Next, use our Get Started docs to setup Tiny!</textarea></div>
+  
+</body>
+</html>
