@@ -1,0 +1,67 @@
+{extend name="base" /}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            <div class="layui-row layui-col-space10 layui-form-item">
+                <div class="layui-col-lg6">
+                    <label class="layui-form-label">组名：</label>
+                    <div class="layui-input-block">
+                        {if isset($edit['group_id'])}
+                        <input type="text" class="layui-input" value="{$edit.group}" disabled />
+                        {else}
+                        <input type="text" name="group" lay-verify="required" placeholder="显示标题" maxlength="16" autocomplete="off" class="layui-input" value="{$edit.group}" />
+                        {/if}
+                    </div>
+                </div>
+                <div class="layui-col-lg6">
+                    <label class="layui-form-label">角色：</label>
+                    <div class="layui-input-block">
+                        {foreach name="userRole" id="vo"}
+                        {if in_array($vo['role_id'], $edit['access'])}
+                        <input type="checkbox" name="roles[]" title="{$vo.role}" value="{$vo.role_id}" checked />
+                        {else}
+                        <input type="checkbox" name="roles[]" title="{$vo.role}" value="{$vo.role_id}" />
+                        {/if}
+                        {/foreach}
+                    </div>
+                </div>
+                <div class="layui-col-lg6">
+                    <label class="layui-form-label">备注说明：</label>
+                    <div class="layui-input-block">
+                        {if $edit['internal'] == 1}
+                        <textarea class="layui-textarea" disabled>{$edit.remark}</textarea>
+                        {else}
+                        <textarea name="group_remark" placeholder="请输入内容" class="layui-textarea">{$edit.group_remark}</textarea>
+                        {/if}
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        {if $edit['user_id'] == 0}
+                        <button class="layui-btn layui-btn-sm layui-btn-disabled" disabled lay-filter="component-form-element">立即提交</button>
+                        {else}
+                        <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                        {/if}
+                        <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{/block}
+{block name="scripts"}
+<script>
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form;
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                ns.close(res)
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

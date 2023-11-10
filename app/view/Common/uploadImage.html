@@ -1,0 +1,25 @@
+<!-- 图片上传 -->
+<script type="text/html" id="uploadImage">
+    {{# if(d.list.length){ }}
+        {{# for(var i=0;i<d.list.length;i++){ }}
+            <div class="item" data-index="{{i}}">
+                <div class="img-wrap">
+                    <img src="{{ns.img(d.list[i])}}" layer-pid="{{i}}" layer-src />
+                </div>
+                <div class="operation">
+                    <i title="图片预览" class="iconfont icon-eye js-preview"></i>
+                    <i title="删除图片" class="layui-icon layui-icon-delete js-delete" data-index="{{i}}"></i>
+                </div>
+            </div>
+        {{# } }}
+        {{# if(d.list.length < d.max){ }}
+            <div class="item js-add-image">
+                <i class="layui-icon layui-icon-upload"></i>
+            </div>
+        {{# } }}
+    {{# }else{ }}
+        <div class="item js-add-image">
+            <i class="layui-icon layui-icon-upload"></i>
+        </div>
+    {{# } }}
+</script>

@@ -1,0 +1,219 @@
+{extend name="$base" /}
+{block name="resources"}
+    <style>
+        .layui-treetable {
+            background-color: #f0f0f0;
+            padding: 0 5px 5px 5px;
+        }
+        .layui-treetable .layui-form {
+            position: relative;
+            height: 480px;
+            overflow: auto;
+        }
+        .layui-treetable .layui-table {
+            padding-top: 100px;
+        }
+        .col_id {
+            width: 60px;
+        }
+        .action_col {
+            width: 200px;
+        }
+        .layui-table thead th {
+            background-color: #d4d8e1!important;
+        }
+    </style>
+{/block}
+{block name="main"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form layui-form-filter">
+            <div class="layui-form-item" style="margin-bottom: 0px;">
+                <div class="layui-inline btn-group">
+                    <button class="layui-btn layui-btn-sm" lay-event="add">
+                        <i class="layui-icon">&#xe654;</i>
+                        添加权限
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="LAY-list-table" lay-filter="LAY-list-table"></div>
+    </div>
+</div>
+{/block}
+{block name="scripts"}
+<!-- 操作 -->
+<script type="text/html" id="actionTpl">
+    <div class="layui-btn-group" data-values="{{=JSON.stringify(d)}}">
+        {if checkAccess('sysRuleAdd')}
+        <a class="layui-btn layui-btn-xs" lay-event="add"><i class="layui-icon layui-icon-add-1"></i>添加</a>
+        {/if}
+        {if checkAccess('sysRuleEdit')}
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i>编辑</a>
+        {/if}
+        {if checkAccess('sysRuleDel')}
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon layui-icon-delete"></i>删除</a>
+        {/if}
+    </div>
+</script>
+
+<script>
+    layui.config({ base: '/static/admin/layui/lay/modules/' }).use(['form', 'treetable', 'laytpl'], function(){
+        var $ = layui.$ 
+        , treetable = layui.treetable
+        , pageTable
+        , form = layui.form
+        , table = {
+            options: {
+                where: {},
+                params: {
+                    page: 1,
+                    limit: 9999
+                },
+                callback: {
+                    beforeCollapse(o) {
+                        table.set('rule_' + o.item.id, null);
+                        return true
+                    },
+                    beforeExpand(o) {
+                        table.set('rule_' + o.item.id, '1');
+                        return true
+                    },
+                    done(p, o) {
+                        $('[lay-event]').unbind().bind('click', function(e) {
+                            var that = $(this);
+                            o.data = that.parent().data("values") || { id: 0 },
+                            active[that.attr("lay-event")].call(this, o)
+                        })
+                    }
+                }
+            },
+            getTreeOption(res) {
+                return $.extend(this.options, {
+                    elem: this.options.elem,
+                    nodes: this.parseData(res),
+                    layout: this.options.cols[0]
+                })
+            },
+            parseData(data) {
+                data.forEach((v,i) => {
+                    data[i].spread = this.getSpread(v.id),
+                    v.children&&(data[i].children=this.parseData(v.children))
+                });
+                return data;
+            },
+            getSpread(id) {
+                return this.get('rule_' + id) == '1';
+            },
+            get(name) {
+                if (window['localStorage']) {
+                    let obj = JSON.parse(localStorage.getItem(name)||'{"value": ""}');
+                    return obj.value;
+                }
+                return ''
+            },
+            set(name, value) {
+                if (window['localStorage']) {
+                    if (value === null) {
+                        localStorage.removeItem(name)
+                    } else {
+                        let obj = {value: value};
+                        localStorage.setItem(name, JSON.stringify(obj))
+                    }
+                }
+            },
+            render(options) {
+                this.options = $.extend(this.options, options),
+                this.renderTable(this.options.elem, this.options)
+            },
+            reload(elem, params) {
+                this.options.elem = '#' + elem,
+                this.options = $.extend(this.options, params),
+                this.renderTable(this.options.elem, this.options)
+            },
+            ps(url,obj){
+                Object.keys(obj).map(v => (url=url+(url.indexOf('?')==-1?'?':'&')+v+'='+encodeURIComponent(obj[v])));
+                return url;
+            },
+            renderTable(e, opts) {
+                var url = this.options.url;
+                url = this.ps(url,this.options.where),
+                url = this.ps(url,this.options.params),
+                ns.silent(url, {}, res => {
+                    $(this.options.elem).empty(),
+                    res.data.list = this.getTreeOption(res.data.list),
+                    layui.treetable(res.data.list)
+                })
+            },
+            getAction(row) {
+                let template = document.getElementById('actionTpl').innerHTML;
+                return laytpl(template).render(row);
+            }
+        }
+        , active = {
+            cols: [
+                [{
+                    name: "ID",
+                    field: 'id',
+                    headerClass: 'col_id',
+                    colClass: 'value_col',
+                    style: ''
+                },{
+                    name: "权限名",
+                    field: 'label',
+                    treeNodes: true,
+                    headerClass: 'value_col',
+                    colClass: 'value_col',
+                    style: ''
+                },{
+                    name: "操作",
+                    headerClass: 'action_col',
+                    colClass: 'value_col',
+                    style: '',
+                    render: function(rowText, row) {
+                        return table.getAction(row);
+                    }
+                }]
+            ],
+            add(o){
+                ns.open("{:url('sysRuleAdd')}?id=" + o.data.id, '添加权限', [ '660px', '450px' ]).then(() => {
+                    active.render()
+                })
+            },
+            edit(o) {
+                ns.open("{:url('sysRuleEdit')}?id=" + o.data.id, '编辑权限', [ '660px', '450px' ]).then(() => {
+                    active.render()
+                })
+            },
+            del(e) {
+                parent.layer.confirm('您确定要删除该权限？', {
+                    title: '友情提示',
+                    icon: 3,
+                    btn: ['是的', '再想想']
+                }, function(i) {
+                    parent.layer.close(i),
+                    ns.silent("{:url('sysRuleDel')}", {id: e.data.id}, res => {
+                        if (res.code == 0) {
+                            setTimeout(() => active.render(), 100)
+                        } else {
+                            layer.alert(res.message)
+                        }
+                    })
+                })
+            },
+            render() {
+                table.render({
+                    elem: "#LAY-list-table",
+                    toolbar: '#table-toolbar',
+                    url: location.href,
+                    cols: active.cols
+                })
+            }
+        };
+
+        window.addEventListener("load", function() {
+            active.render()
+        });
+    })
+</script>
+{/block}

@@ -1,0 +1,165 @@
+{extend name="$base" /}
+{block name="main"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form layui-form-filter">
+            <div class="layui-form-item" style="margin-bottom: 0px;">
+                <div class="layui-inline">
+                    <label class="layui-form-label">记录筛选</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="keyword" placeholder="请输入关键字" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-sm" lay-submit lay-filter="LAY-btn-search">
+                        <i class="layui-icon layui-icon-search"></i>
+                        搜索
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!---->
+        <table id="LAY-list-table" lay-filter="LAY-list-table"></table>
+    </div>
+</div>
+{/block}
+{block name="scripts"}
+<!-- 工具栏 -->
+<script type="text/html" id="table-toolbar">
+    <span class="layui-btn-group" style="margin-left: -15px;">
+        {if checkAccess("sysGroupAdd")}
+        <button class="layui-btn layui-btn-sm" lay-event="add" data-type="add">
+            <i class="layui-icon layui-icon-add-1"></i>添加新用户组
+        </button>
+        {/if}
+    </span>
+</script>
+<!-- 用户组 -->
+<script type="text/html" id="userGroup">
+    <span>{{d.group.group}}</span>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="actionTpl">
+    <div class="layui-btn-group">
+        {if checkAccess('sysGroupUpdate')}
+        <a class="layui-btn layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i>编辑</a>
+        {/if}
+        {if checkAccess('sysGroupDel')}
+        {{#  if(d.internal != 1){ }}
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon layui-icon-delete"></i>删除</a>
+        {{#  } }}
+        {/if}
+    </div>
+</script>
+
+<script>
+    layui.config({ base: '/static/admin/' }).use(['table', 'form'], function(){
+        var $ = layui.$ 
+        , table = layui.table
+        , pageTable
+        , form = layui.form
+        , active = {
+            cols: [
+                [{
+                    field: "group_id",
+                    title: "ID",
+                    width: "6%"
+                }, {
+                    field: "group",
+                    title: "用户组",
+                    width: 200
+                }, {
+                    field: "group_remark",
+                    title: "备注",
+                }, {
+                    title: "操作",
+                    width: 150,
+                    fixed: "right",
+                    toolbar: "#actionTpl"
+                }]
+            ],
+            add(){
+                ns.open("{:url('sysGroupAdd')}", '添加用户组').then(() => {
+                    pageTable.reload();
+                })
+            },
+            edit(e) {
+                ns.open("{:url('sysGroupEdit')}?id=" + e.data.group_id, '编辑用户组').then(() => {
+                    pageTable.reload();
+                })
+            },
+            del(e) {
+                parent.layer.confirm('您确定要删除该用户组？', {
+                    title: '友情提示',
+                    icon: 3,
+                    btn: ['是的', '再想想']
+                }, function(i) {
+                    parent.layer.close(i),
+                    ns.silent("{:url('sysGroupDel')}", {id: e.data.group_id}, res => {
+                        if (res.code == 0) {
+                            setTimeout(() => pageTable.reload(), 100)
+                        } else {
+                            layer.alert(res.message)
+                        }
+                    })
+                });
+            },
+            render() {
+                pageTable = table.render({
+                    elem: "#LAY-list-table",
+                    url: location.href,
+                    toolbar: '#table-toolbar',
+                    cols: active.cols,
+                    response: { msgName: 'message' },
+                    page: !0,
+                    limit: 20,
+                    limits: [20, 50, 200, 500],
+                    height: "full-220",
+                    text: { none: "无数据" },
+                    parseData: function(res) {
+                        return {
+                            code: res.code,
+                            msg: res.message,
+                            count: res.data.count,
+                            data: res.data.list
+                        }
+                    },
+                    done: function() {
+                        ns.page = this.page.curr;
+                    }
+                }),
+
+                table.on('toolbar(LAY-list-table)', function(o) {
+                    console.log(o);
+                    active[o.event] ? active[o.event].call(this, o) : '';
+                }),
+
+                table.on("tool(LAY-list-table)", function(e) {
+                    console.log(e);
+                    active[e.event] ? active[e.event].call(this, e) : '';
+                }),
+
+                table.on("pagebar(LAY-list-table)", function(e) {
+                    console.log(e);
+                })
+            }
+        };
+
+        form.on('submit(LAY-btn-search)', function(data){
+            var field = data.field;
+            table.reload('LAY-list-table', { 
+                where: field,
+                page: { curr: 1 }
+            });
+            return false;
+        }),
+        form.on('switch(status)', function(obj){
+            active.status(obj.elem.getAttribute('data-id'), obj.elem.checked)
+        }),
+        window.addEventListener("load", function() {
+            active.render()
+        });
+    })
+</script>
+{/block}

@@ -19,9 +19,6 @@ class Constant
         }
 
         define('TIMESTAMP', $_SERVER['REQUEST_TIME']);
-        define('MODULE',    $app->request->module());
-        define('CONTROLLER',$app->request->controller());
-        define('ACTION',    $app->request->action());
         define('IS_POST',   $app->request->isPost());
         define('IS_PUT',    $app->request->isPut());
         define('IS_DELETE', $app->request->isDelete());
@@ -31,6 +28,7 @@ class Constant
         $accept = explode(',', $app->request->header('accept'));
         define('CONTENT_TYPE', empty($accept) ? 'text/html' : $accept[0]);
         define('IS_JSON', strpos(CONTENT_TYPE, 'json') !== FALSE ? true: false);
+        define('PLATFORM_SUPER', 'platform.super');
 
         if ($app->request->method(true) == 'OPTIONS') {
             throw new \think\Response\HttpResponseException(Response::create()->code(200));

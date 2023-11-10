@@ -9,6 +9,13 @@ use think\facade\Cache;
 class Query extends \think\db\Query
 {
     /**
+     * 是否引用关联
+     *
+     * @var boolean
+     */
+    private $_related = false;
+
+    /**
      * 获取数据缓存配置
      *
      * @return void
@@ -16,10 +23,23 @@ class Query extends \think\db\Query
     private function getCacheConfiguration()
     {
         static $data_cache = 0;
+        if ($this->_related) return false;
         if ($data_cache === 0) {
             $data_cache = $this->connection->getConfig('data_cache');
         }
         return $data_cache;
+    }
+
+    /**
+     * 关联预载入 In方式
+     * @access public
+     * @param array|string $with 关联方法名称
+     * @return $this
+     */
+    public function with($with)
+    {
+        $this->_related = true;
+        return parent::with($with);
     }
 
     /**
@@ -31,10 +51,12 @@ class Query extends \think\db\Query
     private function setCacheFallback($method = '')
     {
         $key = $this->connection->getCacheKeyString($this, $method);
+        $tag = $this->getTable();
+
         if (!empty($method)) {
-            $this->cache($key, 86400);
+            $this->cache($key, 86400, $tag);
         } else {
-            $this->cache($key);
+            $this->cache($key, null, $tag);
         }
     }
 

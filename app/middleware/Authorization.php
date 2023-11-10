@@ -14,6 +14,13 @@ use app\model\system\Rule;
 class Authorization extends BaseMiddleware
 {
     /**
+     * 登录URL
+     * 
+     * @var string
+     */
+    const login_url = "/admin/login/login";
+
+    /**
      * 权限验证
      *
      * @param Request $request
@@ -39,13 +46,13 @@ class Authorization extends BaseMiddleware
     public function handle($request, \Closure $next, ...$args) 
     {
         if ($args) {
-            $isCheck = $this->getArgument($args, 0, false);
+            $isCheck = $this->getArgument($args, 0);
             if (is_bool($isCheck)) {
                 if (empty($request->user) || !isset($request->user["user_id"])) {
                     if (IS_AJAX) {
                         throw new ValidateException('no login.', 403);
                     }
-                    redirect(url('login'))->send();
+                    redirect(url(self::login_url))->send();
                     die;
                 } elseif(!isset($request->user["username"])) {
                     $user_info = User::getInfo([["user_id", "=", $request->user["user_id"]]]);
@@ -55,7 +62,7 @@ class Authorization extends BaseMiddleware
                         if (IS_AJAX) {
                             throw new ValidateException('no login.', 403);
                         }
-                        redirect(url('login'))->send();
+                        redirect(url(self::login_url))->send();
                         die;
                     }
 
@@ -71,6 +78,7 @@ class Authorization extends BaseMiddleware
                 define('S2', $request->user['username']);
                 define('S3', $request->user['parent_id']);
                 define('S4', $request->user['group']);
+                define('S5', $request->user['group_range']);
 
                 if ($isCheck) {
                     if (!$this->checkAccess($request)) {

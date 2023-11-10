@@ -1,0 +1,411 @@
+<style>
+    .layui-tab-wrap > .layui-tab {
+        position: relative;
+    }
+    .customize-configuration {
+        position: absolute;
+        top: 5px;
+        right: 0px;
+    }
+    .customize-configuration .layui-btn-text {
+        border: none;
+        background-color: transparent;
+        color: rgb(48, 124, 255);
+        font-size: 14px;
+    }
+    .layui-number {
+        width: 60px; 
+        display: inline-block; 
+        text-align: center; 
+        margin-right: 6px;
+    }
+    .layui-number:not(:first-of-type) {
+        margin-left: 6px;
+    }
+    .layui-table {
+        width: 100%!important;
+    }
+    .layui-table tbody tr:hover {
+        background-color: #dcecfc !important;
+    }
+    .layui-table td.edit {
+        padding: 0px!important;
+    }
+    .layui-table td.edit .label-unitprice {
+        padding: 9px 15px;
+        display: block;
+        border: 1px solid transparent!important;
+    }
+    .layui-table td.edit:hover .label-unitprice {
+        cursor: text;
+        border-color: #16b777!important;
+    }
+    .layui-table td.edit.focus .layui-number {
+        width: 100%;
+        height: 40px;
+        text-align: left;
+        border: 1px solid #16b777!important;
+    }
+    .layui-table .layui-input {
+        margin-top: -10px;
+        margin-bottom: -10px;
+    }
+    .layui-table button,
+    .layui-table .layui-input-fill,
+    .layui-table .layui-form-select {
+        margin: -10px -10px;
+    }
+    .layui-order-form {
+        min-width: 1024px;
+    }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .layui-input-inline > input[type=text][readonly],
+    .layui-input-inline > input[type=text]:read-only,
+    td > input[type=text][readonly],
+    td > input[type=text]:read-only {
+        color: #bbb;
+        border-color: #cecece;
+        background-color: #f0f0f0;
+    }
+    .layui-input[type=number] {
+        padding-left: 0px;
+    }
+    .undefined-price {
+        text-indent: 10px;
+    }
+    .row-disabled {
+        color: #ccc;
+        background-color: #f0e5c3;
+    }
+    .row-disabled td {
+        position: relative;
+    }
+    .row-disabled td .layui-badge i {
+        font-size: 11px;
+    }
+    .row-disabled td .layui-badge {
+        right: 0px;
+        top: 0px;
+        position: absolute;
+        white-space: nowrap;
+        border-bottom-left-radius: 10px;
+    }
+    .layui-textarea {
+        min-height: 32px;
+        height: 32px;
+    }
+    .layui-text.error,
+    .layui-textearea.error {
+        border-color: rgb(200, 3, 3)!important;
+    }
+    .layui-form-group {
+        padding-top: 20px;
+        margin-bottom: 20px;
+        background-color: #00968817;
+        border: 1px dashed #009688;
+    }
+    .layui-customize-configure ~ .layui-card {
+        display: none;
+    }
+</style>
+<script type="text/html" id="tpl-customize-configuration">
+  <div class="customize-configuration">
+    <button class="layui-btn layui-btn-sm layui-btn-text" id="btn-customize-configuration-back" data-name="{:CONTROLLER}_{:ACTION}">返回配置</button>
+  </div>
+</script>
+<div class="layui-card layui-customize-configure">
+    <div class="layui-card-body" style="padding: 15px!important;">
+        <form
+            action=""
+            class="layui-form"
+            method="POST"
+            enctype="application/x-www-form-urlencoded"
+        >
+            <input type="hidden" name="name" class="layui-input" value="{$value.name}" />
+            <div class="layui-form-group">
+                <div class="layui-form-item layui-inline">
+                    <label class="layui-form-label">配置标题</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="title" class="layui-input" value="{$value.title}" lay-verify="required" />
+                    </div>
+                </div>
+                <div class="layui-form-item layui-inline">
+                    <label class="layui-form-label">所属模块</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="module" class="layui-input" value="{$value.module}" lay-verify="required|ident" />
+                    </div>
+                </div>
+                <div class="layui-form-item layui-inline">
+                    <label class="layui-form-label">所属插件</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="addon" class="layui-input" value="{$value.addon}" lay-verify="ident" />
+                    </div>
+                </div>
+                <div class="layui-form-item layui-inline">
+                    <label class="layui-form-label">&nbsp;</label>
+                    <button class="layui-btn layui-btn-sm" lay-filter="customize-configuration" lay-submit>
+                        <i class="layui-icon layui-icon-ok"></i>
+                        提交配置
+                    </button>
+                </div>
+            </div>
+            <!---->
+            <table class="layui-table">
+                <colgroup>
+                    <col width="42" />
+                    <col width="160" />
+                    <col width="160" />
+                    <col width="160" />
+                    <col style="min-width: 420px;" />
+                    <col width="200" />
+                </colgroup>
+                <thead class="layui-table-header">
+                    <tr> 
+                        <th>
+                            <button type="button" class="layui-btn layui-btn-primary layui-btn-sm" lay-filter="add">
+                                <i class="layui-icon layui-icon-addition"></i>
+                            </button>
+                        </th>
+                        <th>配置标题</th>
+                        <th>配置标识</th>
+                        <th>表单类型</th>
+                        <th>表单属性</th>
+                        <th>提示文字</th>
+                    </tr>
+                </thead>
+                <tbody id="order-content">
+                    {foreach $value.params as $param}
+                    <tr id="item_{$param.id}">
+                        <td>
+                            <button type="button" class="layui-btn layui-btn-primary layui-btn-sm" lay-delete>
+                                <i class="layui-icon layui-icon-delete"></i>
+                            </button>
+                        </td>
+                        <td> 
+                            <input
+                                type="text"
+                                data-name="title"
+                                data-id="{$param.id}"
+                                placeholder="标题"
+                                class="layui-input layui-input-fill"
+                                value="{$param.title}"
+                                maxlength="64"
+                                lay-verify="required"
+                            />
+                        </td>
+                        <td> 
+                            <input
+                                type="text"
+                                data-name="name"
+                                data-id="{$param.id}"
+                                placeholder="标识"
+                                class="layui-input layui-input-fill"
+                                value="{$param.name}"
+                                maxlength="64"
+                                lay-verify="required"
+                            />
+                        </td>
+                        <td>
+                            <select data-name="type" class="layui-select" lay-filter="type" lay-verify="required" lay-search>
+                                {foreach $types as $type}
+                                {if $param.type == $type.name}
+                                <option value="{$type.name}" selected="selected">{$type.title}</option>
+                                {else}
+                                <option value="{$type.name}">{$type.title}</option>
+                                {/if}
+                                {/foreach}
+                            </select>
+                        </td>
+                        <td>
+                            <textarea class="layui-textarea" data-name="attr" placeholder="{}" lay-verify="attr">{$param.attr}</textarea>
+                        </td>
+                        <td> 
+                            <input
+                                type="text"
+                                data-name="remark"
+                                data-id="{$param.id}"
+                                placeholder="备注文字"
+                                class="layui-input layui-input-fill"
+                                value="{$param.remark}"
+                                maxlength="1024"
+                            />
+                        </td>
+                    </tr>
+                    {/foreach}
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>
+<script type="text/html" id="tpl-row">
+    <tr id="item_{{ d.id }}">
+        <td>
+            <button type="button" class="layui-btn layui-btn-primary layui-btn-sm" lay-delete>
+                <i class="layui-icon layui-icon-delete"></i>
+            </button>
+        </td>
+        <td> 
+            <input
+                type="text"
+                data-name="title"
+                data-id="{{ d.id }}"
+                placeholder="标题"
+                maxlength="64"
+                class="layui-input layui-input-fill"
+            />
+        </td>
+        <td> 
+            <input
+                type="text"
+                data-name="name"
+                data-id="{{ d.id }}"
+                placeholder="标识"
+                maxlength="64"
+                class="layui-input layui-input-fill"
+            />
+        </td>
+        <td>
+            <select data-name="type" data-id="{{ d.id }}" class="layui-select" lay-filter="type" lay-search>
+                {foreach $types as $type}
+                <option value="{$type.name}">{$type.title}</option>
+                {/foreach}
+            </select>
+        </td>
+        <td>
+            <textarea class="layui-textarea" data-name="attr" data-id="{{ d.id }}" placeholder="{}" lay-verify="attr"></textarea>
+        </td>
+        <td> 
+            <input
+                type="text"
+                data-name="remark"
+                data-id="{{ d.id }}"
+                placeholder="备注"
+                maxlength="1024"
+                class="layui-input layui-input-fill"
+            />
+        </td>
+    </tr>
+</script>
+<script>
+  layui.use(['laytpl', 'form'], function() {
+    var tpl = layui.laytpl
+    , $ = layui.$
+    , customizer = $('#tpl-customize-configuration').html()
+    , wrap = $('.layui-tab-wrap').find('.layui-tab')
+    , data = {$value.params|json_encode|raw}
+    , btnAdd
+    , form = layui.form
+    , _min = 2
+    , _name = '{$value.name}'
+    , _length = Object.values(data).length
+    , _con = $('#order-content')
+    , _url = '{:url("/admin/config/customize")}'
+    ;
+
+    function addConfig() {
+        var id = (new Date()).getTime()
+        ,rid = "#item_" + id
+        ,templet = layui.laytpl(document.getElementById("tpl-row").innerHTML).render({ id: id });
+        data[id] = {title: '', name: '', type: 'input', attr: '', remark: '', flag: 0},
+        _con.append(templet),
+        _listener(id)
+    }
+
+    function _listener(id) {
+        var rid = "#item_" + id;
+        _con.find(rid).find('button[lay-delete]').on('click', function() {
+            delete data[id];
+            _con.find(rid).remove()
+        }),
+        _con.find(rid).find('input[type="text"],textarea').on("input propertychange", function() {
+            var that = $(this);
+            data[id][that.data("name")] = that.val();
+            if (data[id]['flag'] === 0) {
+                data[id]['flag'] = 1;
+                _con.find(rid).find('input[data-name="name"],input[data-name="title"]').attr("lay-verify", "required"),
+                form.render()
+            }
+        }),
+        form.render()
+    }
+
+    function _back() {
+        location.replace(location.href.replace('?do=customize&name=' + _name.toUpperCase(), ''));
+    }
+
+    form.verify({
+        attr: function(value, elem) {
+            if (value.length > 0) {
+                $(elem).removeClass("error");
+                if (value.indexOf("{") == -1)value ='{'+value;
+                if (value.indexOf("}") == -1)value+='}';
+                try {
+                    var ds = JSON.parse(value);
+                } catch(e) {
+                    $(elem).addClass("error");
+                    return e;
+                }
+            }
+            return;
+        },
+        ident: function(value, elem) {
+            $(elem).removeClass("error");
+            if (value == '') {
+                $(elem).addClass("error");
+                return "不能为空!"
+            } else if(!/^[\w_.]{1,}$/.test(value)) {
+                $(elem).addClass("error");
+                return "输入应为字母、数字，下划线或.号!"
+            }
+        }
+    }),
+
+    form.on("select(type)", function(obj) {
+        var that = $(obj.elem).parent().parent(), id = that.attr("id").replace('item_', '');
+        data[id]['type'] = obj.value,
+        data[id]['flag'] = 1
+    }),
+
+    form.on("submit(customize-configuration)", function(obj) {
+        obj.field.params = Object.values(data).filter(v => v.flag == 1),
+        parent.layer.load(2, { shade: [ '#fff', .3 ] }),
+        $.ajax({
+            url: _url,
+            data: obj.field,
+            dataType: 'json',
+            type: 'POST',
+            success:function(res){
+                parent.layer.closeAll();
+                if(res.code == 0){
+                    parent.layer.msg(res.message,{icon:1, time:1000}, function() {
+                        _back();
+                    });
+                }else{
+                    parent.layer.msg(res.message, {icon:2, time:1000});
+                }
+            }
+        });
+        return false;
+    }),
+
+    tpl(customizer).render({}, function(html) {
+      wrap.append(html);
+      var btn = wrap.find("#btn-customize-configuration-back");
+      btn.on("click", function() {
+        _back();
+      })
+    }),
+
+    btnAdd = $('.layui-table').find('button[lay-filter="add"]').on("click", () => addConfig()),
+    Object.keys(data).forEach(id => _listener(id)),
+    form.render(),
+    btnAdd.trigger("click");
+    while(_length ++ < _min) {
+        btnAdd.trigger('click')
+    }
+  })
+</script>

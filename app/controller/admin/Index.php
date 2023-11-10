@@ -5,11 +5,20 @@ namespace app\controller\admin;
  * 
  * @version 1.0.0
  */
+use app\model\system\Rule;
+use app\model\system\User;
 
 class Index extends Controller
 {
-    public function index()
+    /**
+     * 首页
+     *
+     * @param Rule $rule
+     * @return void
+     */
+    public function index(Rule $rule, User $user)
     {
+        $this->assign("title", "应用管理系统");
         return $this->fetch();
     }
 }

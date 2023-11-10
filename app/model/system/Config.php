@@ -21,9 +21,43 @@ class Config extends Model
      * @param [type] $data
      * @return void
      */
-    public function getAttrAttr($value, $data)
+    public function getParamsAttr($value, $data)
     {
         return json_decode($value, true);
+    }
+
+    /**
+     * 设置参数
+     *
+     * @param [type] $value
+     * @return void
+     */
+    public function setParamsAttr($value)
+    {
+        return json_encode($value);
+    }
+
+    /**
+     * 自动序列化
+     *
+     * @param [type] $value
+     * @param [type] $data
+     * @return void
+     */
+    public function getValueAttr($value, $data)
+    {
+        return json_decode($value, true);
+    }
+
+    /**
+     * 设置参数
+     *
+     * @param [type] $value
+     * @return void
+     */
+    public function setValueAttr($value)
+    {
+        return json_encode($value);
     }
 
     /**
@@ -41,5 +75,45 @@ class Config extends Model
             Cache::tag("config")->set("system_modules", $paths);
         }
         return $paths;
+    }
+
+    /**
+     * 设置参数
+     *
+     * @param [type] $name
+     * @param array $values
+     * @return void
+     */
+    public function setConfig($name, $data = [])
+    {
+        $condition = [ [ "name", "=", $name ] ];
+        $config = self::where($condition)->find();
+        if (empty($config)) {
+            $flag = self::create($data);
+        } else {
+            $data["update_time"] = TIMESTAMP;
+            $data["settings_id"] = $config['settings_id'];
+            $flag = $config->save($data);
+        }
+        if (false === $flag) {
+            throw new \Exception("保存失败!");
+        }
+    }
+
+    /**
+     * 获取参数
+     *
+     * @param string $name
+     * @return void
+     */
+    public function getConfig($name = '')
+    {
+        $config = self::where([ [ 'name', '=', $name ], [ 'user_id', '=', '0' ] ])->findOrEmpty()->toArray();
+        $config["name"] = $config["name"] ?? $name;
+        $config["module"] = $config["module"] ?? MODULE;
+        $config["addon"] = $config["addon"] ?? ADDON;
+        $config["params"] = $config["params"] ?? [];
+
+        return $config;
     }
 }

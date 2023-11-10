@@ -61,6 +61,11 @@ class AddonService extends Service
             'HttpRun' => [ Constant::class, InitAddon::class, AdapterFilter::class ],
             'HttpEnd' => [ HeartBeat::class ]
         ]);
+
+        define('MODULE', $module);
+        define('CONTROLLER',$controller);
+        define('ACTION', $action);
+        define('ADDON', $addon);
     }
 
     /**

@@ -1,0 +1,405 @@
+<style>
+    .layui-elem-quote.title {
+        padding: 5px 15px;
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    .layui-elem-quote.warning {
+        border-radius: 6px;
+        border: 1px dashed #16b777;
+        color: #00731f;
+        margin-bottom: 20px;
+    }
+</style>
+{foreach $value.params as $param}
+    {if $param.type == 'input'}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block {if isset($param.attr.icon)||isset($param.attr.suffix)}layui-input-wrap{/if} {$param.attr.wrap_class ?? ''}">
+                {if isset($param.attr.icon)}
+                <div class="layui-input-prefix">
+                <i class="layui-icon layui-icon-{$param.attr.icon}"></i>
+                </div>
+                {/if}
+                <input 
+                    type="{$param.attr.type ?? 'text'}" 
+                    name="{$param.name}" 
+                    value="{$value.value[$param.name] ?? ($param.attr.value ?? '')}"
+                    autocomplete="off" 
+                    class="layui-input {$param.attr.class??''}"
+                    {foreach $param.attr as $key => $val}
+                        {if !in_array($key, ["type", "value", "class", "icon"])}
+                        {$key}="{$val}"
+                        {/if}
+                    {/foreach}
+                />
+                {if isset($param.attr.suffix)}
+                <div class="layui-input-suffix">
+                <i class="layui-icon layui-icon-{$param.attr.suffix}"></i>
+                </div>
+                {/if}
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+    {elseif $param.type == 'title'}
+        <blockquote class="layui-elem-quote title">{$param.title}</blockquote>
+    {elseif $param.type == 'warning'}
+        <blockquote
+            class="layui-elem-quote warning {$param.attr.class??''}"
+            {foreach $param.attr as $key => $val}
+                {if !in_array($key, ["notitle", "class"])}
+                {$key}="{$val}"
+                {/if}
+            {/foreach}
+        >
+            {if !isset($param.attr.notitle)}
+            <h4>{$param.title}</h4>
+            {/if}
+            {if isset($param.remark)}
+            <span>{$param.remark}</span>
+            {/if}
+        </blockquote>
+    {elseif $param.type == 'password'}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block {if isset($param.attr.icon)||isset($param.attr.suffix)}layui-input-wrap{/if}">
+                {if isset($param.attr.icon)}
+                <div class="layui-input-prefix">
+                    <i class="layui-icon layui-icon-{$param.attr.icon}"></i>
+                </div>
+                {/if}
+                <input 
+                    type="password" 
+                    name="{$param.name}" 
+                    value="{$value.value[$param.name] ?? ($param.attr.value ?? '')}"
+                    autocomplete="off" 
+                    class="layui-input {$param.attr.class??''}"
+                    {foreach $param.attr as $key => $val}
+                        {if !in_array($key, ["type", "value", "class", "icon"])}
+                        {$key}="{$val}"
+                        {/if}
+                    {/foreach}
+                />
+                {if isset($param.attr.suffix)}
+                <div class="layui-input-suffix">
+                    <i class="layui-icon layui-icon-{$param.attr.suffix}"></i>
+                </div>
+                {/if}
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+    {elseif $param.type == 'textarea'}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block">
+                <textarea
+                    name="{$param.name}"
+                    class="layui-textarea {$param.attr.class??''}"
+                    placeholder="{$param.attr.placeholder ?? ''}"
+                    {foreach $param.attr as $key => $val}
+                        {if !in_array($key, ["type", "value", "class", "icon"])}
+                        {$key}="{$val}"
+                        {/if}
+                    {/foreach}
+                >{$value.value[$param.name] ?? ($param.attr.value ?? '')}</textarea>
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+    {elseif $param.type == 'checkbox'}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block">
+                {if isset($param.attr.list)}
+                    {foreach $param.attr.list as $k => $v}
+                    <input
+                        type="checkbox"
+                        name="{$param.name}[]"
+                        title="{$v}"
+                        value="{$k}"
+                        {if isset($value.value[$param.name])}
+                            {if in_array($k, $value.value[$param.name])}
+                            checked
+                            {/if}
+                        {else}
+                            {if (isset($param.attr.value) && in_array($k, $param.attr.value))}
+                            checked
+                            {/if}
+                        {/if}
+                    />
+                    {/foreach}
+                {/if}
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+    {elseif $param.type == 'radio'}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block">
+                {if isset($param.attr.list)}
+                    {foreach $param.attr.list as $k => $v}
+                    <input
+                        type="radio"
+                        name="{$param.name}"
+                        title="{$v}"
+                        value="{$k}"
+                        {if isset($value.value[$param.name])}
+                            {if $value.value[$param.name] == $k}
+                            checked
+                            {/if}
+                        {else}
+                            {if (isset($param.attr.value) && $param.attr.value == $k)}
+                            checked
+                            {/if}
+                        {/if}
+                    />
+                    {/foreach}
+                {/if}
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+    {elseif $param.type == 'switch'}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block">
+                <div>
+                    <input
+                        type="checkbox"
+                        name="{$param.name}"
+                        lay-skin="switch"
+                        title="{$param.attr.title ?? 'ON|OFF'}"
+                        value="{$param.attr.value ?? '1'}"
+                        {if isset($value.value[$param.name])}
+                        checked
+                        {/if}
+                    />
+                </div>
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+    {elseif in_array($param.type, ['image', 'album'])}
+        <div class="layui-form-item">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block">
+                <div class="image-uploader" data-limit="{if $param.type == 'image'}1{elseif $param.type == 'album'}{$param.attr.limit??2}{/if}">
+                    <input
+                        type="hidden"
+                        name="{$param.name}"
+                        value="{$value.value[$param.name] ?? ($param.attr.value ?? '')}"
+                        {foreach $param.attr as $key => $val}
+                            {if !in_array($key, ["type", "value", "class"])}
+                            {$key}="{$val}"
+                            {/if}
+                        {/foreach}
+                    />
+                    <div class="inner"></div>
+                </div>
+                {if !empty($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+        {php}
+            $uploadImage = true;
+        {/php}
+    {elseif in_array($param.type, ['date', 'datetime', 'daterange'])}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block">
+                {if $param.type == 'daterange'}
+                <input
+                    type="text"
+                    id="date_{$param.id}"
+                    name="{$param.name}"
+                    class="layui-input"
+                    readonly="{$param.attr.readonly ?? 'true'}"
+                    placeholder="{$param.attr.placeholder ?? 'yyyy-MM-dd'}"
+                    {foreach $param.attr as $key => $val}
+                        {if !in_array($key, ["type", "value", "class", "icon"])}
+                        {$key}="{$val}"
+                        {/if}
+                    {/foreach}
+                />
+                {else}
+                <div class="layui-input-inline">
+                    <input
+                        type="text"
+                        id="date_{$param.id}"
+                        name="{$param.name}"
+                        class="layui-input"
+                        readonly="{$param.attr.readonly ?? 'true'}"
+                        placeholder="{$param.attr.placeholder ?? 'yyyy-MM-dd'}"
+                        {foreach $param.attr as $key => $val}
+                            {if !in_array($key, ["type", "value", "class", "icon"])}
+                            {$key}="{$val}"
+                            {/if}
+                        {/foreach}
+                    />
+                </div>
+                {/if}
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+        <script>
+            layui.use('laydate', function() {
+                let elem_id = "#date_{$param.id}", value = "{$value.value[$param.name] ?? ($param.attr.value ?? '')}";
+                layui.laydate.render({
+                    {if $param.type == 'daterange'}
+                    type: 'datetime',
+                    range: true,
+                    {else}
+                    type: '{$param.type}',
+                    {/if}
+                    elem: elem_id,
+                    value: value,
+                    isInitValue: true
+                });
+            })
+        </script>
+    {elseif $param.type == 'select'}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block">
+                <select name="{$param.name}" lay-filter="{$param.name}">
+                    <option value="">{$param.attr.title ?? '请选择'}</option>
+                    {if isset($param.attr.list)}
+                        {foreach $param.attr.list as $k => $v}
+                        <option
+                            value="{$k}"
+                            {if isset($value.value[$param.name])}
+                                {if $value.value[$param.name] == $k}
+                                selected="selected"
+                                {/if}
+                            {else}
+                                {if (isset($param.attr.value) && $param.attr.value == $k)}
+                                selected="selected"
+                                {/if}
+                            {/if}
+                        >{$v}</option>
+                        {/foreach}
+                    {/if}
+                </select>
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+    {elseif $param.type == 'colorpicker'}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block">
+                <div class="colorpicker-{$param.id}">
+                    <div class="layui-input-inline" style="width: 200px;">
+                        <input
+                            type="text"
+                            name="{$param.name}"
+                            placeholder="{$param.attr.placeholder ?? '请选择颜色'}"
+                            class="layui-input {$param.attr.class ?? ''}"
+                            id="elem-colorpicker-{$param.id}"
+                            value="{$value.value[$param.name] ?? ($param.attr.value ?? '')}"
+                            {foreach $param.attr as $key => $val}
+                                {$key}="{$val}"
+                            {/foreach}
+                        />
+                    </div>
+                    <div class="layui-inline" style="left: -11px;">
+                        <div id="btn-colorpicker-{$param.id}"></div>
+                    </div>
+                </div>
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+        <style>
+            .colorpicker-{$param.id} .layui-inline {
+                margin-bottom: 0px;
+            }
+            #btn-colorpicker-{$param.id} .layui-colorpicker {
+                padding: 0px;
+                height: 32px;
+                line-height: 32px;
+            }
+        </style>
+        <script>
+            layui.use(function(){
+                var colorpicker = layui.colorpicker;
+                var $ = layui.$;
+                colorpicker.render({
+                    elem: '#btn-colorpicker-{$param.id}',
+                    color: '#1c97f5',
+                    done: function(color){
+                        $('#elem-colorpicker-{$param.id}').val(color);
+                    }
+                });
+            });
+        </script>
+    {elseif $param.type == 'iconpicker'}
+        <div class="layui-form-item" data-key="{$param.id}">
+            <label class="layui-form-label">{$param.title}</label>
+            <div class="layui-input-block">
+                <div class="iconpicker-{$param.id}">
+                    <div class="layui-input-inline" style="width: 200px;">
+                        <input
+                            type="text"
+                            name="{$param.name}"
+                            placeholder="{$param.attr.placeholder ?? '请选择图标'}"
+                            class="layui-input {$param.attr.class ?? ''}"
+                            id="elem-iconpicker-{$param.id}"
+                            value="{$value.value[$param.name] ?? ($param.attr.value ?? '')}"
+                            {foreach $param.attr as $key => $val}
+                                {$key}="{$val}"
+                            {/foreach}
+                        />
+                    </div>
+                    <div class="layui-inline" style="left: -11px;">
+                        <div id="btn-iconpicker-{$param.id}"></div>
+                    </div>
+                </div>
+                {if isset($param.remark)}
+                <div class="layui-form-mid layui-word-aux">{$param.remark}</div>
+                {/if}
+            </div>
+        </div>
+        <style>
+            .layui-iconpicker .layui-btn {
+                height: 32px;
+                line-height: 32px;
+                width: 38px;
+                padding: 0px;
+                border: 1px solid rgba(0,0,0,.15);
+            }
+        </style>
+        <script>
+            layui.config({
+                base: '/static/admin/'
+            }).use(['form', 'iconpicker'], function(){
+                var iconpicker = layui.iconpicker;
+                var $ = layui.$;
+                iconpicker.render({
+                    elem: '#btn-iconpicker-{$param.id}',
+                    done: function(font){
+                        $('#elem-iconpicker-{$param.id}').val(font);
+                    }
+                });
+            });
+        </script>
+    {/if}
+{/foreach}
+{if $uploadImage}
+    {include file="Common/uploadImage" /}
+{/if}

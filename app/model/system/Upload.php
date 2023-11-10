@@ -113,7 +113,7 @@ class Upload extends Model
     public function getList(int $page = 1, int $limit = 9999, array $filter = [])
     {
         $condition = [];
-        if (!isSuperUser()) {
+        if (!super()) {
             $condition[] = ['user_id', '=', S1];
         }
         if (!empty($filter['album_id'])) {

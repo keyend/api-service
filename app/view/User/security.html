@@ -1,0 +1,76 @@
+{extend name="$base" /}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            <div class="layui-row layui-col-space10 layui-form-item">
+                <div class="layui-col-lg6">
+                    <label class="layui-form-label">当前密码：</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="password" lay-verify="required|password" placeholder="当前使用的登录密码" autocomplete="off" class="layui-input" lay-vertype="tips" />
+                    </div>
+                </div>
+
+                <div style="height: 1px; border-top: 1px solid #eee; margin: 15px 0 0 0;"></div>
+
+                <div class="layui-col-lg6">
+                    <label class="layui-form-label">新的密码：</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="password1" id="password1" lay-verify="required|password" placeholder="更新后的登录密码" autocomplete="off" class="layui-input" lay-vertype="tips" />
+                    </div>
+                </div>
+
+                <div class="layui-col-lg6">
+                    <label class="layui-form-label">确认密码：</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="password2" lay-verify="required|password1" placeholder="与新的密码一致" autocomplete="off" class="layui-input" lay-vertype="tips" />
+                    </div>
+                </div>
+
+                <div class="layui-elem-quote" style="margin: 10px 0 0 0;">
+                    <span>提示您：密码修改成功后，后立即退出登录，您需要使用新的密码重新登入!</span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{/block}
+{block name="scripts"}
+<script>
+    layui.config({
+        base: '/static/admin/' //静态资源所在路径
+    }).extend({
+        index: 'lib/index' //主入口模块
+    }).use(['index', 'form'], function(){
+        var $ = layui.$
+            ,admin = layui.admin
+            ,element = layui.element
+            ,form = layui.form;
+        
+        form.verify({
+            password: [/^[\S]{6,12}$/, '密码必须为6到12位的非空字符'],
+            password1: (v, e) => {
+                if (v != document.getElementById("password1").value) {
+                    return "两次密码输入不一致!";
+                }
+            }
+        }),
+
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                ns.close(res),
+                parent.layer.msg("SUCCESS", { time: 1000, success() {
+                    parent.location.reload()
+                } })
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

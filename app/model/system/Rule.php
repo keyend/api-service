@@ -114,9 +114,7 @@ class Rule extends Model
      */
     public function check($name, $user)
     {
-        // 超级管理员跳过此步
-        if ($user['group_range'] === PLATFORM_SUPER) return true;
-
+        if (super()) return true;
         return in_array($this->getId($name), $user['access']);
     }
 
@@ -138,22 +136,31 @@ class Rule extends Model
      * @param String module 当前所在模块
      * @return JSON
      */
-    public function getList(int $page, int $limit, $filter = [], $module = MODULE)
+    public function getTreeList(int $page, int $limit, $condition = [], $field = '*')
     {
-        $condition = [];
-        if (isset($filter['keyword'])&&!empty($filter['keyword'])) {
-            $condition[] = ['title', 'LIKE', "%{$filter['keyword']}%"];
-        }
-        $data = $this->where($condition)->field('`rule_id` as id,`title` as `label`,`parent_id`,`name`')->page($page, $limit)->select()->toArray();
-        $list = parseTree($data, 'id', 'parent_id', 'children');
-        foreach ($list as $item) {
-            if ($item['name'] === $module) {
-                $list = $item['children'];
-                break;
-            }
-        }
-        $count = count($data);
+        $data = $this->getList($page, $limit, $condition, $field);
+        $list = parseTree($data["list"], 'id', 'parent_id', 'children');
+        $count = $data["count"];
+        return compact('count', 'list');
+    }
 
+    /**
+     * 返回权限列表
+     *
+     * @param integer $page
+     * @param integer $limit
+     * @param array $condition
+     * @param string $field
+     * @return void
+     */
+    public function getList(int $page, int $limit, $condition = [], $field = '*')
+    {
+        $list = $this->where($condition)
+        ->field($field)
+        ->page($page, $limit)
+        ->order('sort DESC')
+        ->column($field, "rule_id");
+        $count = count($list);
         return compact('count', 'list');
     }
 }

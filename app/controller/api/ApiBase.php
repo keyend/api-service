@@ -26,7 +26,7 @@ class ApiBase extends BaseController
         return [
             'logger' => [
                 'call' => 'info', 
-                'class' => \app\model\system\LogsModel::class
+                'class' => \app\model\system\Logs::class
             ]
         ];
     }

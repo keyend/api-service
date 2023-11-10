@@ -30,15 +30,6 @@ class User extends Model
     const STATUS_LOCK = 2;
 
     /**
-     * 用户属性
-     * @collection relation.model
-     */
-    public function attr()
-    {
-        return $this->hasMany(UserExtend::class, 'user_id', 'user_id');
-    }
-
-    /**
      * 所属用户组
      * @collection relation.model
      */
@@ -103,9 +94,8 @@ class User extends Model
      */
     public function getUser($map)
     {
-        $user = parent::where($map)->with(['group', 'attr', 'attr.info'])->find();
-        if ($user && $user->attr) {
-            $user->attr = array_column($user->attr->toArray(), 'value', 'attr');
+        $user = parent::where($map)->with(['group'])->find();
+        if ($user && $user->group) {
             $user->group = $user->group;
         }
         return $user;
@@ -135,17 +125,9 @@ class User extends Model
         // 更新用户在线时间
         $user->lastonline_time = TIMESTAMP;
         $user->lastlogin_ip = request()->ip();
+        $user->lastlogin_time = TIMESTAMP;
         $user->token = rand_string();
         $user->save();
-
-        // 扩展字段加入
-        if ($user->attr) {
-            foreach($user->attr as $attr => $value) {
-                if (!empty($attr)) {
-                    $user->setAttr($attr, $value);
-                }
-            }
-        }
 
         // 保存用户登录信息
         $data = array_keys_filter($user->toArray(), [
@@ -156,7 +138,8 @@ class User extends Model
             'token',
             'lastlogin_ip',
             'lastonline_time',
-            'realname'
+            'nickname',
+            'avatar'
         ]);
         // 用户组
         $data['group'] = $user->group->group;
@@ -180,7 +163,7 @@ class User extends Model
     {
         $condition = [];
         if (isset($filter['keyword']) && !empty($filter['keyword'])) {
-            $condition[] = ['username', 'LIKE', "%{$filter['keyword']}%"];
+            $condition[] = ['username|nickname|realname|mobile', 'LIKE', "%{$filter['keyword']}%"];
         }
         $query = self::where($condition)->order('user_id DESC');
         /**
@@ -190,19 +173,15 @@ class User extends Model
          * 3. 平台用户返回主用户及子用户
          * 4. 超级管理员返回所有主用户
          */
-        $query->when(isSuperUser(), function($query) {
+        $query->when(super(), function($query) {
             $query->where('parent_id', '<>', 0);
-        })->when(!isSuperUser(), function($query) {
+        })->when(!super(), function($query) {
             $query->where('user_id|parent_id', S3);
         });
         $count = $query->count();
 
         $query->withoutField('password,salt,parent_id')->with(['group' => function($query) {
             $query->field('group_id,group');
-        }, 'attr' => function($query) {
-            $query->withJoin(['info' => function($query) {
-                $query->where('app', 'admin');
-            }]);
         }]);
         $list = $query->page($page, $limit)->withAttr('create_time', function($value) {
             return parseTime($value);
@@ -214,11 +193,6 @@ class User extends Model
 
         array_walk($list, function(&$item) {
             $item['is_delete'] = $item['user_id'] !== S1 && $item['user_id'] !== S3;
-            foreach($item['attr'] as $attr) {
-                $item[$attr['attr']] = $attr['value'];
-            }
-
-            unset($item['attr']);
         });
 
         return compact('count', 'list', 'sql');
@@ -232,36 +206,26 @@ class User extends Model
      * @param array  $attrs      扩展字段
      * @return int
      */
-    public function addUser(array $data, $attrs)
+    public function addUser(array $data)
     {
-        Db::transaction(function () use(&$data, $attrs) {
+        Db::transaction(function () use(&$data) {
             try {
                 $data['user_id'] = parent::insertGetId(array_keys_filter($data, [
                     'username',
                     'password',
+                    'nickname',
+                    ['realname', ''],
+                    ['mobile', ''],
+                    ['avatar', ''],
                     'salt',
                     'status',
                     'group_id',
                     'parent_id',
                     'create_time'
-                ]));
-    
-                if ($data['user_id']) {
-                    // 创建用户扩展记录
-                    foreach($attrs as $attr) {
-                        if (isset($data[$attr['attr']])) {
-                            $userAttr[] = [
-                                'user_id' => $data['user_id'],
-                                'attr_id' => $attr['attr_id'],
-                                'value' => $data[$attr['attr']]
-                            ];
-                        }
-                    }
-    
-                    UserExtend::insertAll($userAttr);
-                    Db::commit();
-                }
+                ], true));
+                Db::commit();
             } catch(\Exception $e) {
+                throw new \Exception($e->getMessage());
                 Db::rollback();
             }
         });
@@ -277,12 +241,17 @@ class User extends Model
      * @param array  $attrs      扩展字段
      * @return int
      */
-    public function editUser($data = [], $attrs)
+    public function editUser($data = [])
     {
-        Db::transaction(function () use(&$data, $attrs) {
+        Db::transaction(function () use(&$data) {
             $userData = array_keys_filter($data, [
                 'username',
                 'password',
+                'nickname',
+                ['realname', ''],
+                ['mobile', ''],
+                ['avatar', ''],
+                ['remark', ''],
                 'salt',
                 'status',
                 'group_id',
@@ -291,16 +260,6 @@ class User extends Model
                 'update_time'
             ]);
             $this->save($userData);
-
-            $userAttr = array_column($this->getAttr('attr'), 'value', 'attr_id');
-            foreach($attrs as $attr) {
-                if ($data[$attr['attr']] != $userAttr[$attr['attr_id']]) {
-                    UserExtend::where([['user_id', '=', $this->user_id], ['attr_id', '=', $attr['attr_id']]])->update([
-                        'value' => $data[$attr['attr']]
-                    ]);
-                }
-            }
-
             Db::commit();
         });
     }
@@ -313,10 +272,9 @@ class User extends Model
     public function delUser()
     {
         $group = $this->getAttr('group');
-        if (isSuperUser($group) || $this->parent_id == 0) {
+        if (super($group->group_range) || $this->parent_id == 0) {
             throw new HttpException('操作失败(不允许删除该用户)!');
         }
-
         $user_model = new static();
         $user_child = $user_model->where('parent_id', $this->user_id)->field('user_id')->find();
         if (!empty($user_child)) {
@@ -324,7 +282,7 @@ class User extends Model
         }
         try {
             $this->logger('logs.sys.user.delete', 'DELETE', $this->getData());
-            $this->together(['attr'])->delete();
+            $this->delete();
         } catch(\Exception $e) {
             throw new HttpException($e->getMessage());
         }

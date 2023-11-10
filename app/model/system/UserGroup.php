@@ -28,7 +28,7 @@ class UserGroup extends Model
      */
     public function getRules($group_id)
     {
-        if (isSuperUser()) {
+        if (super()) {
             return app()->make(Rule::class)->getRules();
         }
 

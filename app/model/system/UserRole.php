@@ -70,7 +70,7 @@ class UserRole extends Model
          * 树形默认所拥有的权限列表
          * 从父ID取出组权限
          */
-        $user = app()->make(UserModel::class)->find(S3);
+        $user = app()->make(User::class)->find(S3);
         $rules = array_values(array_column($user->getAccess(), 'name'));
         if ($id !== 0) {
             $data = $this->with(['access'])->find($id);
@@ -79,7 +79,7 @@ class UserRole extends Model
             }
             $data = $data->toArray();
             if ($data['internal'] === 1 && $data['role'] === 'EVERYONE') {
-                $data['roles'] = explode(",", UserAccessModel::where('rule_id', '>', '0')->value('GROUP_CONCAT(`rule_id`)'));
+                $data['roles'] = explode(",", Rule::where('rule_id', '>', '0')->value('GROUP_CONCAT(`rule_id`)'));
                 foreach($data['roles'] as &$role_id) {
                     $role_id = (int)$role_id;
                 }
@@ -98,7 +98,7 @@ class UserRole extends Model
             $data['roles'] = [];
         }
 
-        $rules = UserAccessModel::where('rule_id', '>', '0')->when(!isSuperUser(), function($query) use($rules) {
+        $rules = Rule::where('rule_id', '>', '0')->when(!super(), function($query) use($rules) {
             // 非超管从主账户取出继承权限
             $query->where('rule_id', 'in', array_values(array_column($rules, 'rule_id')));
         })->field('`rule_id` as `id`,`title`,`parent_id`,`name`')->select()->toArray();

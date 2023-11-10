@@ -1,0 +1,168 @@
+{extend name="base" /}
+{block name="resources"}
+    <style>
+        .layui-form-label.must::after {
+            content: "*";
+            color: red;
+            position: absolute;
+            right: 10px;
+        }
+        .layui-form-item {
+            font-size: 0px;
+            margin-bottom: 10px;
+        }
+        .layui-form-item .layui-form-label,
+        .layui-form-item .layui-input-block {
+            font-size: 14px;
+        }
+        .image-uploader .inner {
+            width: 5rem;
+            height: 5rem;
+            margin: 0 auto;
+        }
+        .image-uploader .item {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            line-height: 4.5rem;
+            overflow: hidden;
+        }
+        .image-uploader .item .layui-icon.layui-icon-upload {
+            font-size: 36px;
+            color: #bbb;
+        }
+        .layui-form-group .layui-inline {
+            width: 49.9999%;
+            margin-right: 0px;
+        }
+        .layui-input:read-only,
+        .layui-textarea:read-only {
+            background-color: #f7f7f7;
+            color: #ccc;
+        }
+    </style>
+{/block}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            <div class="layui-row">
+                <div class="layui-col-xs2">
+                    <div class="image-uploader" data-limit="1">
+                        <input type="hidden" name="avatar" value="{$item['avatar'] ?? ''}" />
+                        <div class="inner"></div>
+                    </div>
+                </div>
+                <div class="layui-col-xs10 layui-form-group">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label must">登录用户：</label>
+                            <div class="layui-input-block">
+                                <input
+                                    type="text" 
+                                    name="username" 
+                                    lay-verify="required" 
+                                    placeholder="请填写用户名" 
+                                    autocomplete="off" 
+                                    class="layui-input" 
+                                    value="{$item.username}" 
+                                    {if $item.user_id}
+                                    readonly
+                                    {/if}
+                                />
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label must">会员呢称：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="nickname" lay-verify="required" placeholder="" autocomplete="off" class="layui-input" value="{$item.nickname}" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">真实姓名：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="realname" placeholder="" autocomplete="off" class="layui-input" value="{$item.realname}" />
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">联系方式：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="mobile" placeholder="" autocomplete="off" class="layui-input" value="{$item.mobile}" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label {$item.user_id??'must'}">登录密码：</label>
+                        <div class="layui-input-block">
+                            <input
+                                type="password" 
+                                name="password" 
+                                autocomplete="off" 
+                                class="layui-input"
+                                {if !isset($item['user_id'])} lay-verify="required"{/if} 
+                                {if $item.group.group_range == 'platform.super'}
+                                placeholder="******" 
+                                disabled
+                                {/if}
+                            />
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">用户分组：</label>
+                        <div class="layui-input-block">
+                            <select name="group_id" lay-filter="group" {if $item.group.group_range=='platform.super'}disabled="true"{/if}>
+                                {foreach name="userGroup.list" id="group"}
+                                {if $item.group_id == $group.group_id}
+                                <option value="{$group.group_id}" data-range="{$group.group_range}" selected="selected">{$group.group}</option>
+                                {elseif $group.group_range != 'platform.super'}
+                                <option value="{$group.group_id}" data-range="{$group.group_range}">{$group.group}</option>
+                                {/if}
+                                {/foreach}
+                            </select>
+                            <input type="hidden" name="parent_id" value="{$item.parent_id}" />
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">备注说明：</label>
+                        <div class="layui-input-block">
+                            <textarea 
+                                class="layui-textarea" 
+                                name="remark" 
+                                placeholder="" 
+                                style="height: 80px"
+                                {if $item.group.group_range == 'platform.super'}
+                                placeholder="******" 
+                                disabled
+                                {/if}
+                            >{$item.remark ?? ''}</textarea>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{include file="Common/uploadImage" /}
+{/block}
+{block name="scripts"}
+<script>
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form;
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                ns.close(res)
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

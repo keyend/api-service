@@ -1,0 +1,54 @@
+{extend name="base" /}
+{block name="resources"}
+<style>
+    .layui-form-label {
+        width: 170px;
+    }
+    .layui-input-block {
+        margin-left: 200px;
+    }
+</style>
+{/block}
+{block name="main"}
+{include file="Common/configureCustomize" /}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            {include file="Common/configureComponent" /}
+            <!---->
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="save">保存设置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{/block}
+{block name="scripts"}
+{include file="Common/uploadImage" /}
+<script>
+    layui.use(['form','jquery'],function(){
+        let form = layui.form;
+        let $ = layui.jquery;
+
+        form.on('submit(save)', function(data){
+            $.ajax({
+                data: data.field,
+                dataType:'json',
+                type:'post',
+                success:function(res){
+                    if(res.code == 0){
+                        parent.layer.msg(res.message,{icon:1,time:1000},function(){
+                            location.reload();
+                        });
+                    }else{
+                        parent.layer.msg(res.message,{icon:2,time:1000});
+                    }
+                }
+            })
+            return false;
+        });
+    })
+</script>
+{/block}

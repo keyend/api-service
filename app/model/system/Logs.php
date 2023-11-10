@@ -146,23 +146,23 @@ class Logs extends Model
             $query->where('create_time', 'between', getTime($filter['date']));
         }
         if (isset($filter['keyword']) && $filter['keyword'] !== '') {
-            $query->where('logs_model.params|template.title', 'like', '%' . $filter['keywords'] . '%');
+            $query->where('logs.params|template.title', 'like', '%' . $filter['keywords'] . '%');
         }
         if (isset($filter['labels']) && !empty($filter['labels'])) {
             $query->where('label', 'IN', $filter['labels']);
         }
         $fields = implode(",", [
-            "logs_model.label",
-            "logs_model.user_id",
-            "logs_model.params",
-            "logs_model.create_time",
+            "logs.label",
+            "logs.user_id",
+            "logs.params",
+            "logs.create_time",
             "user.username",
             "template.title",
-            "logs_model.content as name",
+            "logs.content as name",
             "template.content as template"
         ]);
         $result = $this->maps(function($query, $page, $limit) {
-            $cursor = $query->order("logs_model.id DESC")->cursor();
+            $cursor = $query->order("logs.id DESC")->cursor();
             $sql = $query->getLastSql();
             $list = [];
             foreach($cursor as $row) {

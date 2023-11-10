@@ -1,0 +1,412 @@
+{extend name="$base" /}
+{block name="resources"}
+    <style>
+        .ui-album, .layui-layout-body, html {
+            height: 100%;
+						width: 100%;
+						overflow: hidden;
+        }
+        .ui-album .content {
+            margin-top: 10px;
+            height: calc(100% - 77px);
+        }
+        .bg-gray {
+            background-color: darkgray;
+        }
+        .flex-space {
+            display: flex;
+            justify-content: space-between;
+        }
+        .flex-space .layui-form {
+            margin-left: auto;
+        }
+        .flex-space .layui-form .layui-input + .layui-btn {
+            height: 29px;
+            line-height: 29px;
+            position: absolute;
+            right: 1px;
+            top: 1px;
+            border-width: 0;
+            border-left-width: 1px;
+    				padding: 0 7px;
+        }
+        .content .group {
+            width: 196px;
+            height: 100%;
+            background-color: antiquewhite;
+        }
+        .content .list {
+            flex: 1;
+            height: 100%;
+            position: relative;
+        }
+        .content .img-list {
+            padding: 0 15px;
+            margin-right: -2rem;
+        }
+        .content .img-list li {
+            width: auto;
+            display: block;
+            float: left;
+            width: 6.5rem;
+            margin: 0 .8rem .6rem 0;
+        }
+        .content .img-list::after {
+            content: " ";
+            display: block;
+            clear: both;
+        }
+        .content .img-list .bg-gray {
+            height: 6.5rem;
+						display: flex;
+						position: relative;
+						justify-content: center;
+						align-items: center;
+        }
+        .content .img-list img {
+						max-width: 100%;
+						max-height: 100%;
+				}
+        .content .img-list span {
+            display: block;
+            margin-top: 10px;
+            height: 20px;
+            line-height: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .content .list .page {
+            position: absolute;
+            bottom: 0px;
+            right: 2rem;
+        }
+        .content .list .page .layui-laypage {
+            margin: 0px;
+        }
+				.group li {
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					padding: 0 25px;
+					height: 50px;
+					cursor: pointer;
+				}
+				.group li:hover {
+					background-color: aquamarine;
+				}
+				.group li.active {
+					background-color: rgb(221, 210, 194);
+				}
+				.image-box-active {
+					position: absolute;
+					z-index: 1;
+					width: 100%;
+					height: 6.3rem;
+					border: 2px solid;
+					border-color: #e45c02;
+					color: white;
+				}
+				.image-box-active i {
+					display: inline-block;
+					position: absolute;
+					right: 3px;
+					top: 2px;
+					z-index: 2;
+					font-style: normal;
+				}
+				.image-box-active::after {
+					content: '';
+					display: block;
+					position: absolute;
+					top: -2px;
+					right: -2px;
+					border: 15px solid;
+					border-color: transparent;
+					border-top-color: #e45c02;
+					border-right-color: #e45c02;
+				}
+    </style>
+{/block}
+{block name="body"}
+<div class="layui-fluid ui-album">
+	<!-- 搜索框 -->
+	<div class="header flex-space" style="margin-right: 30px;">
+		<button class="layui-btn layui-btn-normal" id="btnUploadImage">上传图片</button>
+		<button class="layui-btn layui-btn-primary ns-text-color ns-border-color" onclick="addGrouping()">添加分组</button>
+		<div class="layui-form">
+			<div class="layui-input-inline">
+				<input type="text" name="search_keys" placeholder="请输入图片名称" autocomplete="off" class="layui-input album-img-sreach">
+				<button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+					<i class="layui-icon">&#xe615;</i>
+				</button>
+			</div>
+		</div>
+	</div>
+	<!-- 图片列表 -->
+	<div class="content flex-space">
+		<div class="group">
+			<ul id="group-list">
+				{foreach name="uploadGroup" id="group" key="k"}
+				<li data-id="{$group.id}" data-index="{$k}" {if $k==0}class="active"{/if}>
+					<span>{$group.group_name}</span>
+					<span>{$group.filecount}</span>
+				</li>
+				{/foreach}
+			</ul>
+		</div>
+		<div class="list">
+			<ul class="img-list"></ul>
+			<div id="img-list-page" class="page"></div>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="scripts"}
+
+<!-- 多图上传 -->
+<script type="text/html" id="multuple_html">
+	<div class="layui-form multuple-list-box">
+		<div class="layui-form-item">
+			<label class="layui-form-label sm">本地图片</label>
+			<ul class="layui-input-block multuple-list">
+				<li class="multuple-list-img" id="ImgUpload">
+					<span class="ns-bg-color">+</span>
+					<span class="ns-text-color-black">点击添加图片</span>
+				</li>
+			</ul>
+		</div>
+		<div class="ns-form-row sm">
+			<button class="layui-btn layui-btn-disabled" disabled="disabled" id="chooseListAction">提交</button>
+			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
+		</div>
+	</div>
+</script>
+
+<!-- 图片展示 -->
+<script type="text/html" id="albumList">
+		{{# layui.each(d.list,function(index,item){ }}
+    <li data-id="{{item.id}}" data-value='{{JSON.stringify(item)}}' class="item">
+        <div class="bg-gray">
+            <img src="{{ ns.img(item.filepath) }}" alt="{{item.filepath}}">
+            {{#  if( getActiveArrayIndex(item.id) != "-1"){ }}
+            <div class="image-box-active"><i class="active-index">{{ getActiveArrayIndex(item.id) }}</i></div>
+            {{#  } }}
+        </div>
+        <span>{{item.title}}</span>
+    </li>
+    {{# }) }}
+    {{#  if(d.count === 0){ }}
+    <div class="empty-data">暂无数据</div>
+    {{#  } }}
+</script>
+
+<script>
+	var form, laytpl, laypage, upload, $,
+	limit = 15,
+	current_page = 1,
+	active_array = [],
+	album_id;
+
+	layui.use(['form', 'laytpl', 'laypage', 'upload'], function() {
+		$ = layui.$,
+		form = layui.form;
+		laytpl = layui.laytpl;
+		laypage = layui.laypage;
+		upload = layui.upload;
+		album_id = $("#group-list li.active").data("id")
+		
+		form.render();
+		//初始化数据
+		init();
+
+		//监听搜索事件
+		form.on('submit(search)', function() {
+			albumImgList(1, limit);
+		});
+
+		//分组切换
+		$("#group-list li").click(function() {
+			$(this).addClass("active").siblings().removeClass("active");
+			album_id = $("#group-list li.active").data("id");
+			albumImgList(1, limit);
+		});
+
+    //多图片上传
+    upload.render({
+      elem: '#btnUploadImage'
+      ,url: '{:url("sysAttachUpload")}?album_id=' + album_id
+      ,multiple: true
+			,before: function(obj){
+				layer.load(2);
+			}
+      ,done: function(res){
+        if (res.code!=0) {
+					layer.msg(res.message)
+				}
+      }
+			,allDone: function(obj){
+				layer.closeAll('loading'),
+				albumImgList(current_page, limit)
+			}
+    });
+	});
+
+	/**
+	 * 图片加载
+	 * @param page
+	 * @param limit
+	 */
+	function albumImgList(page, limit) {
+		$.ajax({
+			url: location.href,
+			type: "POST",
+			dataType: "JSON",
+			async: false,
+			data: {
+				album_id,
+				limit,
+				page,
+				kw: $(".album-img-sreach").val()
+			},
+			success: function(res) {
+				current_page = page;
+				laytpl($("#albumList").html()).render(res.data, function(data) {
+					$(".img-list").html(data);
+					checkItem();
+				});
+
+				if (res.data.count > 0) {
+					laypage.render({
+						elem: 'img-list-page',
+						count: res.data.count,
+						limit,
+						curr: page,
+						jump: function(obj, first) {
+							if (!first) {
+								albumImgList(obj.curr, obj.limit);
+							}
+						}
+					})
+				}
+			}
+		})
+	}
+	
+	/**
+	 * 选择个体
+	 */
+	function checkItem() {
+		$(".img-list").unbind('click').on("click", ".item", function() {
+			var data = $(this).data("value");
+			if ($(this).find(".image-box-active").length > 0) {
+				var active_index = getDelateActiveArrayIndex(data.id);
+				sortActiveArrayIndex(active_index);
+				$(this).find(".image-box-active").remove();
+			} else {
+				if (active_array.length < imgNum) {
+					data.index = active_array.length + 1;
+					active_array.push(data);
+					var active_html = '<div class="image-box-active ns-border-color"><i class="active-index">' + active_array.length + '</i></div>';
+					$(this).find("div").append(active_html);
+				}
+			}
+		});
+	}
+	
+	//获取选择图片信息
+	function getCheckItem(callback) {
+		if (typeof callback == "function") callback(active_array);
+	}
+
+	//获取选中
+	function getActiveArrayIndex(id) {
+		var delete_index = -1;
+		$.each(active_array, function(i, item) {
+			if (item.id == id) {
+				delete_index = item.index;
+				return false;
+			}
+		});
+		return delete_index;
+	}
+
+	//删除选中
+	function getDelateActiveArrayIndex(id) {
+		var delete_index;
+		$.each(active_array, function(i, item) {
+			if (item.id == id) {
+				delete_index = item.index;
+				active_array.splice(i, 1);
+				return false;
+			}
+		});
+		return delete_index;
+	}
+
+	//重新排序
+	function sortActiveArrayIndex(index) {
+		$.each(active_array, function(i, item) {
+			var item_index = item.index;
+			if (item_index > index) {
+				active_array[i]["index"] = item_index - 1;
+				if ($(".img-list").find(".item[data-id = '" + item["id"] + "']").length > 0) {
+					$(".img-list").find(".item[data-id = '" + item["id"] + "']").find(".image-box-active i ").text(item["index"]);
+				}
+			}
+		})
+	}
+
+	/**
+	 * 初始化数据
+	 */
+	function init() {
+		albumImgList(1, limit); //分组图像
+		checkItem(); //选择个体
+	}
+	
+	var search = window.location.search, imgNum = parseInt(getSearchString('limit', search));
+	function getSearchString(key, Url) {
+		var str = Url;
+		str = str.substring(1, str.length);
+		var arr = str.split("&");
+		var obj = new Object();
+		for (var i = 0; i < arr.length; i++) {
+			var tmp_arr = arr[i].split("=");
+			obj[decodeURIComponent(tmp_arr[0])] = decodeURIComponent(tmp_arr[1]);
+		}
+		return obj[key];
+	}
+	/**
+	 * 添加分组
+	 */
+	var flag_add_group = false;
+	function addGrouping() {
+		var laryer_add = layer.prompt({
+			formType: 3,
+			title: '添加分组',
+			area: ["350px"],
+			shade: 0,
+			offset: '150px'
+		}, function(value) {
+			if (flag_add_group) return;
+			flag_add_group = true;
+			$.ajax({
+				url: "{:url('sysAttachGroup')}",
+				data: {
+					"group_name": value
+				},
+				type: "POST",
+				dataType: "JSON",
+				success: function(res) {
+					layer.msg(res.message);
+					flag_add_group = false;
+					if (res.code == 0) {
+						location.reload();
+					}
+				}
+			})
+		})
+	}
+</script>
+{/block}

@@ -181,7 +181,7 @@ var ns = {
 			area: ['825px', '675px'],
 			fixed: false, //不固定
 			btn: ['保存', '返回'],
-			content: '/admin/util/album.html?limit=' + limit,
+			content: '/album/admin/album.html?limit=' + limit,
 			yes: function (index, e) {
         e = e.find('iframe')[0].contentWindow,
 				e.getCheckItem(obj => typeof(fn)=='function'&&fn.call(e, obj)),

@@ -5,7 +5,7 @@ namespace mashroom\service;
  * @author k. <email@email.com>
  * @version 1.0.0
  */
-use app\api\model\LogsModel;
+use app\api\model\Logs as LogsModel;
 use app\model\AttachmentModel;
 use mashroom\component\Upload;
 use mashroom\exception\HttpException;

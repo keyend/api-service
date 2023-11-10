@@ -77,10 +77,13 @@
             border-radius: 50%;
             display: inline-block;
             vertical-align: middle;
+            text-align: center;
             margin-top: -4px;
         }
         .layui-avatar img {
-            max-height: 100%;
+            width: 100%;
+            height: 100%;
+            margin: 0 auto;;
             object-fit: contain;
             vertical-align: unset;
         }
@@ -145,13 +148,13 @@
                 </li>
                 <li class="layui-nav-item" lay-unselect>
                     <a href="javascript:;">
-                        <i class="layui-avatar"><img src="{$admin.attr.avatar}" alt="{$admin.attr.realname}" /></i>
-                        <cite>{$admin.attr.realname}</cite>
+                        <i class="layui-avatar"><img src="{$admin.avatar}" alt="{$admin.realname}" /></i>
+                        <cite>{$admin.realname}</cite>
                     </a>
                     <dl class="layui-nav-child">
-                        <dd><a href="javascript:;" onclick="editPwd();">修改密码</a></dd>
-                        <dd><a href="javascript:;" onclick="clearCache();">清除缓存</a></dd>
-                        <dd><a href="javascript:;" onclick="logout();">退出</a></dd>
+                        <dd><a class="password" href="javascript:;">修改密码</a></dd>
+                        <dd><a class="cache" href="javascript:;">清除缓存</a></dd>
+                        <dd><a class="logout" href="javascript:;">退出</a></dd>
                     </dl>
                 </li>
             </ul>
@@ -159,87 +162,31 @@
         <!-- 侧边菜单 -->
         <div class="layui-side layui-side-menu">
             <div class="layui-side-scroll">
-                <div class="layui-logo" style="background-size: 20px 20px; text-align: unset; text-indent: 1.8rem;">
-                    <span>云服务管理</span>
+                <div class="layui-logo" style="background-size: 20px 20px; text-align: unset;">
+                    <span>LOGO</span>
                 </div>
 
                 <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu" lay-filter="layadmin-system-side-menu">
-                    <li data-name="template" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="系统管理" lay-direction="2">
-                            <i class="layui-icon layui-icon-app"></i>
-                            <cite>系统配置</cite>
+                    <li data-name="template" class="layui-nav-item layui-this">
+                        <a href="javascript:;" layadmin-event="indexPage">
+                            <i class="layui-icon layui-icon-chart-screen"></i>
+                            <cite>概况</cite>
                         </a>
-                        <dl class="layui-nav-child">
-                            {if checkAccess('sysConfigBasic') || checkAccess('sysConfigConnect') || checkAccess('sysConfigPay') || checkAccess('sysConfigMail') || checkAccess('sysConfigVip')}
-                            <dd><a lay-href="{:url('sysConfig')}">参数配置</a></dd>
-                            {/if}
-                            {if checkAccess('sysUser') || checkAccess('sysGroup') || checkAccess('sysRole') || checkAccess('sysRule')}
-                            <dd><a lay-href="{:url('sysSecurity')}">账户安全</a></dd>
-                            {/if}
-                            {if checkAccess('sysLogsOperator') || checkAccess('sysLogsLogin') || checkAccess('sysLogsTemplate')}
-                            <dd><a lay-href="{:url('sysLogs')}">日志管理</a></dd>
-                            {/if}
-                        </dl>
                     </li>
+                    {foreach $menus as $k => $v}
+                    {if $v["is_show"]}
                     <li data-name="template" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="用户管理" lay-direction="2">
-                            <i class="layui-icon layui-icon-user"></i>
-                            <cite>品类客户</cite>
+                        <a href="javascript:;" lay-tips="{$v.label}" lay-direction="{$k}" lay-href="{:addon_url($v)}">
+                            {if !empty($v['icon'])}
+                            <i class="{$v['icon']}"></i>
+                            {else}
+                            <i class="layui-icon layui-icon-file-b"></i>
+                            {/if}
+                            <cite>{$v.label}</cite>
                         </a>
-                        <dl class="layui-nav-child">
-                            {if checkAccess('category')}
-                            <dd><a lay-href="{:url('category')}">品类管理</a></dd>
-                            {/if}
-                            {if checkAccess('craft')}
-                            <dd><a lay-href="{:url('craft')}">工艺管理</a></dd>
-                            {/if}
-                            {if checkAccess('member')}
-                            <dd><a lay-href="{:url('member')}">客户列表</a></dd>
-                            {/if}
-                        </dl>
                     </li>
-                    <li data-name="template" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="订单配送" lay-direction="2">
-                            <i class="layui-icon layui-icon-chart"></i>
-                            <cite>订单配送</cite>
-                        </a>
-                        <dl class="layui-nav-child">
-                            {if checkAccess('order')}
-                            <dd><a lay-href="{:url('order')}">订单管理</a></dd>
-                            {/if}
-                            {if checkAccess('delivery')}
-                            <dd><a lay-href="{:url('delivery')}">配送列表</a></dd>
-                            {/if}
-                            {if checkAccess('orderDeliveryManger')}
-                            <dd><a lay-href="{:url('orderDeliveryManger')}">配送管理</a></dd>
-                            {/if}
-                            {if checkAccess('supplement')}
-                            <dd><a lay-href="{:url('supplement')}">补单记录</a></dd>
-                            {/if}
-                            {if checkAccess('orderLabelManager')}
-                            <dd><a lay-href="{:url('orderLabelManager')}">标签打印</a></dd>
-                            {/if}
-                            {if checkAccess('orderConverge')}
-                            <dd><a lay-href="{:url('orderConverge')}">订单汇总</a></dd>
-                            {/if}
-                        </dl>
-                    </li>
-                    <li data-name="template" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="财务管理" lay-direction="2">
-                            <i class="layui-icon layui-icon-dollar"></i>
-                            <cite>财务管理</cite>
-                        </a>
-                        <dl class="layui-nav-child">
-                            {if checkAccess('financePayments')}
-                            <dd><a lay-href="{:url('financePayments')}">收款明细</a></dd>
-                            {/if}
-                        </dl>
-                        <dl class="layui-nav-child">
-                            {if checkAccess('financeReceivable')}
-                            <dd><a lay-href="{:url('financeReceivable')}">应收账款</a></dd>
-                            {/if}
-                        </dl>
-                    </li>
+                    {/if}
+                    {/foreach}
                 </ul>
             </div>
         </div>
@@ -268,7 +215,7 @@
         <!-- 主体内容 -->
         <div class="layui-body" id="LAY_app_body">
             <div class="layadmin-tabsbody-item layui-show">
-                <iframe src="{:url('sysDashboard')}" frameborder="0" class="layadmin-iframe"></iframe>
+                <iframe src="{:addon_url('stat://admin/dashboard')}" frameborder="0" class="layadmin-iframe"></iframe>
             </div>
         </div>
         <!-- 辅助元素，一般用于移动设备下遮罩 -->
@@ -278,44 +225,19 @@
 {/block}
 {block name="scripts"}
 <script type="text/javascript">
-    var app = { value: null };
+    const app = {
+        value: null,
+        index_url: '/admin',
+        pass_url: '{:url("/admin/user/modity_pwd")}',
+        logout_url: '{:url("/admin/user/logout")}',
+        clear_cache_url: '{:url("/admin/cache/clear")}'
+    };
 
     layui.config({
-        base: '/static/admin/' //静态资源所在路径
+        base: '/static/admin/'
     }).extend({
-        index: 'lib/index' //主入口模块
-    }).use(['index', 'form', 'util']);
-
-    function editPwd() {
-        layer.open({
-            type: 2,
-            title: '修改密码',
-            shade: 0.6,
-            area: ['40%', '50%'],
-            content: '{:url("sysUserSecurity")}'
-        });
-    }
-
-    function clearCache() {
-        layer.load(2),
-        layui.$.getJSON("{:url('sysClearCache')}", r => {
-            layer.closeAll(),
-            r.code != 0 ? layer.alert(r.message) : parent.layer.msg("SUCCESS");
-        })
-    }
-
-    function logout() {
-        layui.$.ajax({
-            type: 'POST',
-            url: "{:url('sysLogout')}",
-            dataType: 'json',
-            beforeSend: () => layer.load(2),
-            success: r => {
-                if (r.code === 0) {
-                    location.reload();
-                }
-            }
-        })
-    }
+        boostrap: 'boostrap',
+        index: 'lib/index'
+    }).use(['index', 'boostrap', 'form', 'util']);
 </script>
 {/block}

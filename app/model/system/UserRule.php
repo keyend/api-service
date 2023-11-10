@@ -35,7 +35,7 @@ class UserRule extends Model
      */
     protected function eachPRI($ids)
     {
-        $rules = app()->make(UserAccessModel::class)->where('rule_id', 'in', $ids)->where('parent_id', '<>', 0)->field('parent_id')->distinct(true)->select()->toArray();
+        $rules = app()->make(Rule::class)->where('rule_id', 'in', $ids)->where('parent_id', '<>', 0)->field('parent_id')->distinct(true)->select()->toArray();
         $rules = array_values(array_column($rules, 'parent_id'));
 
         if ($rules) {

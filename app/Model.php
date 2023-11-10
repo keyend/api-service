@@ -39,7 +39,7 @@ class Model extends \think\Model
      */
     protected function logger(...$args)
     {
-        $class = app()->make(\app\model\system\LogsModel::class);
+        $class = app()->make(\app\model\system\Logs::class);
         $params = [];
         $arguments = [];
         foreach($args as $i => $val) {

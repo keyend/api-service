@@ -111,6 +111,32 @@ if (!function_exists('parseTime')) {
     }
 }
 
+if (!function_exists('addon_url')) {
+    /**
+     * 生成地址
+     *
+     * @param mixed $rule
+     * @return void
+     */
+    function addon_url($rule) {
+        if (is_array($rule)) {
+            $dispatch = [];
+            if (!empty($rule['addon'])){
+                $dispatch[] = "";
+                $dispatch[] = $rule['addon'];
+            }
+        } elseif(is_string($rule)) {
+            $patch = parse_url($rule);
+            $dispatch[] = "";
+            $dispatch[] = $patch["scheme"];
+            $dispatch[] = $patch["host"];
+            $rule = [];
+            $rule["rule"] = substr($patch["path"], 0, 1) == '/' ? substr($patch["path"], 1) : $patch["path"];
+        }
+        return url(implode("/", $dispatch) . "/" . $rule["rule"]);
+    }
+}
+
 if (!function_exists('getTime')) {
     /**
      * 获取时间片段
@@ -131,6 +157,20 @@ if (!function_exists('getTime')) {
             $result[] = strtotime($value);
         }
         return $result;
+    }
+}
+
+if (!function_exists('super')) {
+    /**
+     * 判断是否为系统管理员
+     * 
+     * @return boolean
+     */
+    function super($range = null) {
+        if ($range !== null) return $range === PLATFORM_SUPER;
+        if (defined('S5') && defined('PLATFORM_SUPER'))
+            return S5 === PLATFORM_SUPER;
+        return false;
     }
 }
 
@@ -483,4 +523,37 @@ if (!function_exists('getLocationByIp')) {
 
         return rtrim($address, '-');
     }
+}
+
+if (!function_exists('listen')) {
+    /**
+     * 注册事件监听
+     * @access public
+     * @param string $event    事件名称
+     * @param mixed  $listener 监听操作（或者类名）
+     * @param bool   $first    是否优先执行
+     * @return $this
+     */
+    function listen(string $event, $listener, bool $first = false) {
+        \think\facade\Event::listen($event, $listener, $first);
+    }
+}
+
+/**
+ * 覆盖事件方法
+ *
+ * @param string $event
+ * @param mixed $args
+ * @param bool $once
+ * @return void
+ */
+function event($event, $args = [], $once = false)
+{
+    $res = \think\facade\Event::trigger($event, $args);
+    if (is_array($res)) {
+        $res = array_filter($res);
+        sort($res);
+    }
+    if ($once)return isset($res[ 0 ]) ? $res[ 0 ] : '';
+    return $res;
 }

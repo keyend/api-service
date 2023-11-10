@@ -1,0 +1,46 @@
+{if super()}
+{if request()->get("do") == 'customize'}
+  {php}
+    \think\facade\Event::listen('ConfigurationCustomize', 'app\event\ConfigurationCustomize');
+    \think\facade\Event::trigger('ConfigurationCustomize', $value);
+  {/php}
+{else}
+<style>
+  .layui-tab-wrap > .layui-tab {
+    position: relative;
+  }
+  .customize-configuration {
+    position: absolute;
+    top: 5px;
+    right: 0px;
+  }
+  .customize-configuration .layui-btn-text {
+    border: none;
+    background-color: transparent;
+    color: rgb(48, 124, 255);
+    font-size: 14px;
+  }
+</style>
+<script type="text/html" id="tpl-customize-configuration">
+  <div class="customize-configuration">
+    <button class="layui-btn layui-btn-sm layui-btn-text" id="btn-customize-configuration" data-name="{:CONTROLLER}_{:ACTION}">配置表单</button>
+  </div>
+</script>
+<script>
+  layui.use(['laytpl'], function() {
+    var tpl = layui.laytpl;
+    var $ = layui.$;
+    var customizer = $('#tpl-customize-configuration').html();
+    var wrap = $('.layui-tab-wrap').find('.layui-tab');
+
+    tpl(customizer).render({}, function(html) {
+      wrap.append(html);
+      var btn = wrap.find("#btn-customize-configuration");
+      btn.on("click", function() {
+        location.replace(location.href + '?do=customize&name=' + btn.data("name").toUpperCase());
+      })
+    })
+  })
+</script>
+{/if}
+{/if}

@@ -1,0 +1,168 @@
+{extend name="base" /}
+{block name="resources"}
+    <style>
+        .layui-form-item {
+            margin-bottom: 10px;
+        }
+        .layui-form-label {
+            position: relative;
+        }
+        .layui-form-label.must::after {
+            content: "*";
+            color: red;
+            position: absolute;
+            right: 10px;
+        }
+        .layui-form-switch {
+            margin-top: 3px;
+        }
+        .layui-form-icon {
+            padding-left: 15px;
+        }
+        .layui-form-icon .layui-btn {
+            width: 100px;
+            height: 75px;
+            border-color: #eee;
+        }
+        .layui-form-icon .layui-btn > span {
+            display: block;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+        }
+        .layui-form-icon .layui-btn > span > i {
+            font-size: 24px;
+        }
+        .layui-input:read-only,.layui-input[readonly] {
+            color: #ccc;
+            background: #f0f0f0;
+            border-color: #eee;
+        }
+    </style>
+{/block}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            <div class="layui-row">
+                <input type="hidden" name="parent_id" value="{$edit.parent_id}" />
+                <div class="layui-form-item">
+                    <label class="layui-form-label">上级权限：</label>
+                    <div class="layui-input-block">
+                        <input type="text" class="layui-input" value="{$parentRule.title ?? '[ROOT]'}" readonly />
+                    </div>
+                </div>
+                <div class="layui-row">
+                    <div class="layui-col-xs9">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label must">权限标题：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="title" lay-verify="required" placeholder="显示标题" maxlength="16" autocomplete="off" class="layui-input" value="{$edit.title}" />
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">路由地址：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="rule" placeholder="path/path/path" maxlength="128" autocomplete="off" class="layui-input" value="{$edit.rule}" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-col-xs3 layui-form-icon">
+                        <input type="hidden" name="icon" id="icon" value="{$edit.icon}" />
+                        <div class="layui-btn layui-btn-primary" id="btn-iconpicker">
+                            <span>
+                                <i class="{$edit.icon}"></i>
+                            </span>
+                            图标
+                        </div>
+                        <script>
+                            layui.config({ base: '/static/admin/' }).use(['iconpicker'], function(){
+                                var iconpicker = layui.iconpicker;
+                                var $ = layui.$;
+                                iconpicker.render({
+                                    elem: '#btn-iconpicker',
+                                    replace: false,
+                                    done: function(font){
+                                        $('#icon').val(font),
+                                        $('#btn-iconpicker').find('i').attr("class", font)
+                                    }
+                                });
+                            });
+                        </script>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label must">权限标识：</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" lay-verify="required" placeholder="请输入字母数字" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.name}" />
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label must">应用模块：</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="module" placeholder="填写模块标识" maxlength="64" autocomplete="off" class="layui-input" value="{$edit.module}" />
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item" style="margin-top: -5px;">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">是否显示：</label>
+                        <div class="layui-input-block">
+                            <input type="checkbox" name="is_show" title="显示|隐藏" lay-skin="switch" value="1" {if $edit.is_show}checked="true"{/if} />
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-form-mid layui-text-em">开启后，会作为一个菜单页或最终页</div>
+                    </div>
+                </div>
+                <div class="layui-form-item" style="margin-top: -10px;">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">展示界面：</label>
+                        <div class="layui-input-block">
+                            <input type="checkbox" name="is_page" title="页面|菜单" lay-skin="switch" value="1" {if $edit.is_page}checked="true"{/if} />
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <div class="layui-form-mid layui-text-em">开启后，会作为一个最终页下级不显示为菜单</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">应用插件：</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="addon" placeholder="填写插件标识" maxlength="64" autocomplete="off" class="layui-input" value="{$edit.addon}" />
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">排序值：</label>
+                        <div class="layui-input-block">
+                            <input type="number" name="sort" placeholder="0" maxlength="2" autocomplete="off" class="layui-input" value="{$edit.sort}" />
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{/block}
+{block name="scripts"}
+<script>
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form;
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                ns.close(res)
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

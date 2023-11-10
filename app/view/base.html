@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>云服务管理</title>
+    <title>{$title ?? ''}</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
@@ -14,7 +14,82 @@
     <script src="/static/admin/ns.js"></script>
 {block name="resources"}{/block}</head>
 
-<body class="layui-layout-body">{block name="body"}{/block}{block name="scripts"}{/block}
-<script>ns.init();</script>
+<body class="layui-layout-body">
+{block name="body"}
+    <div class="layui-side second-nav">
+        <div class="layui-side-scroll">
+            <ul class="layui-nav layui-nav-tree" lay-filter="second-nav">
+            {foreach $menus as $v}
+                {if !empty($v['children']) && $v["is_page"] == 0}
+
+                <li class="layui-nav-item {$v['selected']?'layui-this layui-nav-itemed':''}">
+                    <a href="javascript:;" class="layui-menu-tips">
+                        <span>{$v.label}</span>
+                    </a>
+                    <dl class="layui-nav-child">
+                        {foreach $v['children'] as $c}
+
+                        <dd{$c['selected']?' class="layui-this"':''}>
+                            <a href="{:addon_url($c)}" class="layui-menu-tips">
+                                <span>{$c.label}</span>
+                            </a>
+                        </dd>
+
+                        {if $v['selected'] && !empty($c["children"])}
+                            {php}$tags = $c["children"];{/php}
+                        {/if}
+                        {/foreach}
+                    </dl>
+                </li>
+
+                {else}
+
+                <li class="layui-nav-item {$v['selected']?'layui-this layui-nav-itemed':''}">
+                    <a href="{:addon_url($v)}" class="layui-menu-tips">
+                        <span>{$v.label}</span>
+                    </a>
+                </li>
+                {if $v['selected'] && !empty($v["children"])}
+                    {php}$tags = $v["children"];{/php}
+                {/if}
+
+                {/if}
+            {/foreach}
+            </ul>
+        </div>
+    </div>
+    <div class="layui-body">
+        <div class="layui-content">
+            {if !empty($tags)}
+            <div class="layui-tab-wrap" style="background-color: white; padding: 5px 15px 0 15px;">
+                <div class="layui-tab layui-tab-brief" style="margin-bottom: 0px;">
+                    <ul class="layui-tab-title">
+                        {foreach $tags as $v}
+                        {if $v['selected']}
+                        <li class="layui-this">
+                            <a href="javascript:;">{$v.label}</a>
+                        </li>
+                        {elseif $v['is_show']}
+                        <li>
+                            <a href="{:addon_url($v)}">{$v.label}</a>
+                        </li>
+                        {/if}
+                        {/foreach}
+                    </ul>
+                </div>
+            </div>
+            {/if}
+            {block name="main"}{/block}
+        </div>
+    </div>
+{/block}
+{block name="scripts"}{/block}
+<script>
+    layui.use(function(){
+      var element = layui.element;
+      element.render('nav');
+      ns.init();
+    });
+</script>
 </body>
 </html>

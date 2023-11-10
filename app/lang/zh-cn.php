@@ -1,0 +1,22 @@
+<?php 
+return [
+    'logs.type.logged'                  => '会员登录',
+    'logs.type.logout'                  => '退出登录',
+    'logs.type.updated'                 => '记录更新',
+    'logs.type.createed'                => '新增记录',
+    'logs.type.delete'                  => '删除数据',
+    'logs.user.login'                   => '操作员{username}登录',
+    'logs.user.logout'                  => '操作员{username}退出登录',
+    'logs.sys.user.create'              => '创建操作员{username}',
+    'logs.sys.user.delete'              => '删除操作员{username}',
+    'logs.sys.user.status'              => '更新操作员{username}状态',
+    'logs.sys.group.create'             => '新增会员组{group}',
+    'logs.sys.group.delete'             => '删除会员组{group}',
+    'logs.sys.group.update'             => '编辑更新会员组{group}',
+    'logs.sys.role.create'              => '新增角色 => [{role}]',
+    'logs.sys.role.update'              => '编辑更新角色 => [{role}]',
+    'logs.sys.role.delete'              => '删除角色 => [{role}]',
+    'logs.sys.rule.create'              => '新增权限 => [{title}]',
+    'logs.sys.rule.update'              => '编辑更新权限 => [{title}]',
+    'logs.sys.rule.delete'              => '删除权限 => [{title}]',
+];

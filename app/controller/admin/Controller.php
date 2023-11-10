@@ -41,7 +41,7 @@ class Controller extends BaseController
         return [
             'logger' => [
                 'call' => 'info', 
-                'class' => \app\common\model\system\LogsModel::class
+                'class' => \app\model\system\Logs::class
             ]
         ];
     }
@@ -52,19 +52,100 @@ class Controller extends BaseController
         // 只显示严重的错误
         error_reporting(E_ERROR | E_PARSE);
 
-        $this->assign('rule', $this->request->rule()->getName());
-        $this->assign('admin', $this->request->user);
-
+        $this->params = input();
         if ($this->request->isAjax() || $this->request->isPost()) {
             $controller = ucfirst(str_replace('.', '', $this->request->controller()));
-            $class = "\\app\\validate\\{$controller}";
-            $this->params = input();
+            $class = $this->request->addon() !== '' ? "\\app\\addons\\" . $this->request->addon() . "\\admin\\validate\\{$controller}" : "\\app\\validate\\{$controller}";
             if (class_exists($class)) {
                 $scene = $this->request->action();
                 $method = $this->request->isPost() ? 'post' : 'param';
                 $this->validate = $this->app->make($class)->scene($scene);
-                $this->params = $this->validate->$method();
+                $this->params = $this->validate->$method($this->filter);
             }
+        } else {
+            $this->assign('rule', $this->request->rule()->getName());
+            $this->assign('admin', $this->request->user);
+            $this->assign('base', $this->app->getRootPath() . "app/view/base.html");
+            $this->assign('params', $this->params);
+            $this->initMenu();
+        }
+    }
+
+    /**
+     * 获取菜单列表
+     *
+     * @return void
+     */
+    protected function getMenuList()
+    {
+        return $this->app->make(Rule::class)->getList(1, 9999, [ ['module', '=', 'admin'], ['rule_id', 'IN', $this->request->user['access']] ], '`rule_id` as id,`title` as `label`,parent_id,name,module,addon,rule,icon,is_page,is_show')["list"];
+    }
+
+    /**
+     * 绑定子菜单
+     *
+     * @return void
+     */
+    private function initMenu()
+    {
+        $rule = $this->request->rule()->getRule();
+        $menus = $this->pointMenu($this->getMenuList(), $rule);
+        $menus = parseTree($menus, 'rule_id', 'parent_id', 'children');
+        foreach($menus as $v) {
+            if ($v["selected"]) {
+                $menus = $v["children"];
+                break;
+            }
+        }
+        $this->assign("menus", $menus);
+        $this->assign("tags", []);
+    }
+
+    /**
+     * 定位菜单
+     *
+     * @param [type] $menu
+     * @param [type] $rule
+     * @return void
+     */
+    private function pointMenu($menus, $rule = '') 
+    {
+        // $crumbs = [];
+        // $crumbs_keys = ["parent_id", "label", "rule_id", "rule"];
+        foreach($menus as $id => $item) {
+            $this->addRoute($item);
+            $_rule = !empty($item["addon"]) ? $item["addon"] . "/" . $item["rule"] : $item["rule"];
+            if ($_rule == $rule) {
+                $parent_id = $item["parent_id"];
+                $menus[$id]["selected"] = true;
+                // $crumbs[] = array_keys_filter($menus[$id], $crumbs_keys);
+                while ($parent_id != 0) {
+                    if (!isset($menus[$parent_id]["selected"])) {
+                        $menus[$parent_id]["selected"] = true;
+                        // $crumbs[] = array_keys_filter($menus[$parent_id], $crumbs_keys);
+                    }
+                    $parent_id = $menus[$parent_id]["parent_id"];
+                }
+            }
+        }
+        // 面包屑
+        // $crumbs = parseTree($crumbs, 'rule_id', 'parent_id', 'children');
+        // $this->assign("crumbs", $crumbs);
+        // var_dump($rule);
+        // var_dump($menus);die;
+        return $menus;
+    }
+
+    /**
+     * 添加局部路由
+     *
+     * @param array $item
+     * @return void
+     */
+    private function addRoute($item = [])
+    {
+        if (!empty($item['name'])) {
+            $this->app->route->rule($item['rule'], "/goto")->name($item['name']);
         }
     }
 
@@ -75,7 +156,7 @@ class Controller extends BaseController
      * @param Integer $status 默认返回状态值
      * @return ResponseArray
      */
-    protected function get_defined_vals($args, $message = '', $code = 0)
+    protected function dispatch($args, $message = '', $code = 0)
     {
         if (count($args) > 0) {
             if (is_string($args[0])) {
@@ -119,9 +200,9 @@ class Controller extends BaseController
     protected function success(...$args)
     {
         if (IS_AJAX) {
-            return $this->get_defined_vals($args, 'success', 0);
+            return $this->dispatch($args, 'success', 0);
         } else {
-            $data = $this->get_defined_vals($args, 'success', 0);
+            $data = $this->dispatch($args, 'success', 0);
             $this->assign($data);
             return $this->fetch('Common/success');
         }
@@ -130,9 +211,9 @@ class Controller extends BaseController
     protected function error(...$args)
     {
         if (IS_AJAX) {
-            return $this->get_defined_vals($args, 'failed', 500);
+            return $this->dispatch($args, 'failed', 500);
         } else {
-            $data = $this->get_defined_vals($args, 'success', 0);
+            $data = $this->dispatch($args, 'success', 0);
             $this->assign($data);
             return $this->fetch('Common/error');
         }
