@@ -278,6 +278,30 @@ var ns = {
   },
 
   /**
+   * 剪贴板
+   * @returns Promise
+   */
+  clipboard(elem) {
+    layui.config({ base: '/static/admin/modules/' }).use('clipboard', function() {
+      layui.clipboard.render({
+        elem: elem,
+        success() {
+          if (typeof(window['clipboard_flag']) != undefined &&  window['clipboard_flag'] == true) {
+            // TODO:
+          } else {
+            window['clipboard_flag'] = true;
+            top.layer.msg("已复制", { time: 600, success() {
+              setTimeout(() => {
+                delete window['clipboard_flag']
+              }, 1000)
+            } })
+          }
+        }
+      })
+    })
+  },
+
+  /**
    * 表单初始化
    * @returns void
    */

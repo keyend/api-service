@@ -1,9 +1,690 @@
 {extend name="$base" /}
+{block name="resources"}
+<style>
+    .layui-content {
+        min-width: 800px;
+    }
+    .ui-album, .layui-layout-body, html {
+        min-height: 540px;
+        overflow: hidden;
+    }
+    .ui-album .content {
+        margin-top: 10px;
+        height: 530px;
+    }
+    .bg-gray {
+        background-color: darkgray;
+    }
+    .flex-space {
+        display: flex;
+        justify-content: space-between;
+    }
+    .flex-space .layui-form {
+        margin-left: auto;
+    }
+    .flex-space .layui-form .layui-input + .layui-btn {
+        height: 29px;
+        line-height: 29px;
+        position: absolute;
+        right: 1px;
+        top: 1px;
+        border-width: 0;
+        border-left-width: 1px;
+        padding: 0 7px;
+    }
+    .content .group {
+        width: 196px;
+        height: 100%;
+        background-color: antiquewhite;
+    }
+    .content .list {
+        flex: 1;
+        height: 100%;
+        position: relative;
+    }
+    .content .img-list {
+        padding: 0 15px;
+        margin-right: -2rem;
+    }
+    .content .img-list li {
+        width: auto;
+        display: block;
+        float: left;
+        width: 124px;
+        margin: 0 .8rem .6rem 0;
+    }
+    .content .img-list::after {
+        content: " ";
+        display: block;
+        clear: both;
+    }
+    .content .img-list .bg-gray {
+        height: 6.5rem;
+        display: flex;
+        position: relative;
+        justify-content: center;
+        align-items: center;
+    }
+    .content .img-list img {
+        max-width: 100%;
+        max-height: 100%;
+    }
+    .content .img-list span {
+        display: block;
+        margin-top: 10px;
+        height: 20px;
+        line-height: 20px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .content .list .page {
+        position: absolute;
+        bottom: 0px;
+        right: 2rem;
+    }
+    .content .list .page .layui-laypage {
+        margin: 0px;
+    }
+    .group li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 25px;
+        height: 50px;
+        cursor: pointer;
+    }
+    .group li:hover {
+        background-color: rgb(211, 221, 194);
+    }
+    .group li.active {
+        background-color: rgb(221, 210, 194);
+    }
+    .image-box-active {
+        position: absolute;
+        z-index: 1;
+        width: 100%;
+        height: 6.3rem;
+        border: 2px solid;
+        border-color: #e45c02;
+        color: white;
+    }
+    .image-box-active i {
+        display: inline-block;
+        position: absolute;
+        right: 3px;
+        top: 2px;
+        z-index: 2;
+        line-height: 12px;
+        font-style: normal;
+    }
+    .image-box-active::after {
+        content: '';
+        display: block;
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        border: 15px solid;
+        border-color: transparent;
+        border-top-color: #e45c02;
+        border-right-color: #e45c02;
+    }
+    .content .list .action-bar {
+        position: absolute;
+        top: -48px;
+        left: 15px;
+    }
+    .flag-action {
+        font-size: 0px;
+        height: 22px!important;
+        margin-left: -2.5px;
+        margin-bottom: 5px;
+    }
+    .flag-action .layui-btn {
+        margin-left: 5px;
+    }
+    .flag-action .layui-btn {
+        color: rgb(56, 56, 74);
+        background-color: #e9ebef!important;
+    }
+</style>
+{/block}
 {block name="main"}
 <div class="layui-card">
-    <div class="layui-card-body">
+    <div class="layui-card-body ui-album">
+        <!-- 搜索框 -->
+        <div class="header flex-space">
+            <button class="layui-btn" id="btnUploadImage" style="margin-right: 8px;">上传{$typeText}</button>
+            <button class="layui-btn layui-btn-primary" onclick="addGroup()">新增分组</button>
+            <div class="layui-form">
+                <div class="layui-input-inline">
+                    <input type="text" name="search_keys" placeholder="请输入{$typeText}名称" autocomplete="off" class="layui-input album-img-sreach">
+                    <button type="button" class="layui-btn layui-btn-primary" lay-filter="search" lay-submit>
+                        <i class="layui-icon">&#xe615;</i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- {$typeText}列表 -->
+        <div class="content flex-space">
+            <div class="group">
+                <ul id="group-list"></ul>
+            </div>
+            <div class="list">
+                <ul class="img-list"></ul>
+                <div class="footer">
+                    <div class="action-bar" id="img-action"></div>
+                    <div id="img-list-page" class="page"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {/block}
 {block name="scripts"}
+<!-- 分组编辑 -->
+<script type="text/html" id="albumOperator">
+    {{# if(mode == 0) { }}
+        <button type="button" class="layui-btn" lay-submit lay-filter="edit-group">编辑分组</button>
+    {{# } else { }}
+        {{# if(!d.is_default) { }}
+        <button type="button" class="layui-btn layui-btn-normal" lay-submit lay-filter="edit-group-name">修改组名</button>
+        {{# if(d.filecount > 0) { }}
+        <button type="button" class="layui-btn layui-btn-danger layui-btn-disabled" disabled>删除分组</button>
+        {{# } else { }}
+        <button type="button" class="layui-btn layui-btn-danger" lay-submit lay-filter="delete-group">删除分组</button>
+        {{# } }}
+        {{# } else { }}
+        <button type="button" class="layui-btn layui-btn-normal layui-btn-disabled" disabled>修改组名</button>
+        <button type="button" class="layui-btn layui-btn-danger layui-btn-disabled" disabled>删除分组</button>
+        {{# } }}
+        <button type="button" class="layui-btn layui-btn-success" lay-submit lay-filter="success">完成修改</button>
+        {{# if (active_array.length > 0) { }}
+        <button type="button" class="layui-btn layui-btn-danger" lay-submit lay-filter="delete-image">删除</button>
+        {{# } else { }}
+        <button type="button" class="layui-btn layui-btn-danger layui-btn-disabled" disabled>删除</button>
+        {{# } }}
+    {{# } }}
+</script>
+
+<!-- {$typeText}展示 -->
+<script type="text/html" id="albumList">
+    {{# layui.each(d.list,function(index,item){ }}
+    <li data-id="{{item.id}}" data-group="{{item.group_id}}" data-value="{{JSON.stringify(item)}}" data-index="{{=index}}" class="item" lay-on="gallery">
+        <div class="bg-gray">
+            <img src="{{ ns.img(item.filepath) }}" alt="{{item.filepath}}">
+            {{#  if( getActiveArrayIndex(item.id) != "-1"){ }}
+            <div class="image-box-active"><i class="active-index">{{ getActiveArrayIndex(item.id) }}</i></div>
+            {{#  } }}
+        </div>
+        <span>{{item.title}}</span>
+        {{# if (mode == 1) { }}
+        <span class="flag-action">
+            <button type="button" class="layui-btn layui-btn-xs" data-id="{{item.id}}" data-group="{{item.group_id}}" lay-submit lay-filter="change">换组</button>
+            <button type="button" class="layui-btn layui-btn-xs layui-btn-clipboard" data-clipboard-text="{{ ns.img(item.filepath) }}" lay-submit lay-filter="link">链接</button>
+            <button type="button" class="layui-btn layui-btn-xs" data-id="{{item.id}}" lay-submit lay-filter="delete">删除</button>
+        </span>
+        {{# } }}
+    </li>
+    {{# }) }}
+    {{#  if(d.count === 0){ }}
+    <div class="empty-data">暂无数据</div>
+    {{#  } }}
+</script>
+
+<!-- 分组列表 -->
+<script type="text/html" id="albumGroupItem">
+    {{# d.list.forEach(function(v, index){ }}
+    <li
+        data-id="{{=v.id}}"
+        data-index="{{=index}}" 
+        {{# if(album_id == v.id) { }}
+            class="active"
+        {{# } else if(album_id == 0 && index == 0) { }}
+            class="active"
+        {{# } }}
+    >
+        <span>{{=v.group_name}}</span>
+        <span>{{=v.filecount}}</span>
+    </li>
+    {{# }) }}
+</script>
+
+<!-- 切换分组 -->
+<script type="text/html" id="albumGroup">
+    <div class="layui-form" style="margin: 30px 20px 0 0;">
+        <div class="layui-form-item">
+            <div class="layui-form-item">
+                <label class="layui-form-label">归属分组</label>
+                <div class="layui-input-block">
+                    <select id="album-group">
+                        {foreach name="uploadGroup" id="group" key="k"}
+                        <option value="{$group.id}"{{# if (d.group_id == {$group.id}) { }} selected {{# } }}>{$group.group_name}</option>
+                        {/foreach}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script>
+    var form, laytpl, laypage, upload, $, util,
+    mode = 0,
+    mode_id = 0,
+    limit = 24,
+    type_id = {$type},
+    types = ['images', 'video'],
+    current_page = 1,
+    active_array = [],
+    imageData = [],
+    groupList = {$uploadGroup|json_encode|raw},
+    upload_maxsize = {$config.value.maxsize ?? 0},
+    uploadOptions,
+    album_id;
+
+    layui.use(['form', 'laytpl', 'laypage', 'upload', 'util'], function() {
+        $ = layui.$,
+        form = layui.form;
+        laytpl = layui.laytpl;
+        laypage = layui.laypage;
+        util = layui.util,
+        upload = layui.upload;
+        album_id = $("#group-list li.active").data("id")
+        mode = 0
+        form.render();
+        uploadOptions = {
+            elem: '#btnUploadImage'
+            ,url: '{:url("sysAttachUpload")}'
+            ,data: {
+                album_id: function() {
+                    return album_id;
+                }
+            }
+            ,multiple: true
+            ,accept: types[type_id]
+            ,before: function(obj){
+                layer.load(2);
+            }
+            ,done: function(res){
+                if (res.code!=0) {
+                    layer.msg(res.message)
+                } else {
+                    groupList.forEach((v, i) => {
+                        if (v.id == album_id)groupList[i].filecount +=1
+                    }),
+                    getGroupList(function() {
+                        getImageList(current_page, limit)
+                    })
+                }
+            }
+            ,allDone: function(obj){
+                layer.closeAll('loading'),
+                getImageList(current_page, limit)
+            }
+        };
+
+        if (upload_maxsize > 0) {
+            uploadOptions['size'] = upload_maxsize;
+        }
+
+        $(uploadOptions.elem).attr("lay-options", '{accept: \'' + uploadOptions.accept + '\'}'),
+
+        init(),
+
+        util.on('lay-on', {
+            gallery(obj) {
+                if (mode === 0) {
+                    var ils = imageData.list.map((v,i) => {
+                        return {
+                            alt: v.title,
+                            pid: i,
+                            src: ns.img(v.filepath)
+                        }
+                    });
+                    top.layer.photos({
+                        photos: {
+                            title: "Photos Demo",
+                            start: obj.data("index"),
+                            data: ils
+                        }
+                    })
+                } else {
+                    var value = obj.data("value");
+                    if (getActiveArrayIndex(value.id) == -1) {
+                        active_array.push(value),
+                        laytpl($("#albumList").html()).render(imageData, function(html) {
+                            $(".img-list").html(html),
+                            getToolbar()
+                        })
+                    } else {
+                        getDelateActiveArrayIndex(value.id),
+                        laytpl($("#albumList").html()).render(imageData, function(html) {
+                            $(".img-list").html(html),
+                            getToolbar()
+                        })
+                    }
+                }
+            }
+        }),
+
+        form.on('submit(search)', function() {
+            getImageList(1, limit);
+        }),
+
+        form.on('submit(edit-group-name)', function() {
+            top.layer.prompt({title: '分组名修改'}, function(value, index, elem){
+                if(value === '') return elem.focus();
+                value = layui.util.escape(value);
+                top.layer.close(index);
+                ns.silent("{:url('sysAttachGroupUpdate')}", {id: album_id, group_name: value}, res => {
+                    if (res.code == 0) {
+                        groupList.forEach((v, i) => {
+                            if (v.id == album_id)groupList[i].group_name = value
+                        }),
+                        getGroupList(function() {
+                            getImageList(current_page, limit)
+                        })
+                    } else {
+                        top.layer.alert(res.message)
+                    }
+                })
+            });
+        }),
+
+        form.on('submit(edit-group)', function() {
+            mode = 1,
+            mode_id = album_id,
+            getImageList(current_page, limit);
+        }),
+
+        form.on('submit(success)', function() {
+            mode = 0,
+            mode_id = 0,
+            getImageList(current_page, limit);
+        }),
+
+        form.on('submit(delete)', function(obj) {
+            var ele = $(obj.elem), id = ele.data("id");
+            parent.layer.confirm('您确定要删除该{$typeText}？', {
+                title: '友情提示',
+                icon: 3,
+                btn: ['是的', '再想想']
+            }, function(i) {
+                parent.layer.close(i),
+                ns.silent("{:url('sysAttachDelete')}", {id: id}, res => {
+                    if (res.code == 0) {
+                        groupList.forEach((v, i) => {
+                            if (v.id == album_id)groupList[i].filecount -=1
+                        }),
+                        getGroupList(function() {
+                            getImageList(current_page, limit)
+                        })
+                    } else {
+                        layer.alert(res.message)
+                    }
+                })
+            });
+        }),
+
+        form.on('submit(delete-image)', function(obj) {
+            var ele = $(obj.elem), ids = active_array.map(v => {
+                return v.id
+            });
+            parent.layer.confirm('您确定要删除这些{$typeText}？', {
+                title: '友情提示',
+                icon: 3,
+                btn: ['是的', '再想想']
+            }, function(i) {
+                parent.layer.close(i),
+                ns.silent("{:url('sysAttachDelete')}", { ids: ids }, res => {
+                    if (res.code == 0) {
+                        active_array = [],
+                        groupList.forEach((v, i) => {
+                            if (v.id == album_id)groupList[i].filecount -= ids.length
+                        }),
+                        getGroupList(function() {
+                            getImageList(current_page, limit)
+                        })
+                    } else {
+                        layer.alert(res.message)
+                    }
+                })
+            });
+        }),
+
+        form.on('submit(change)', function(obj) {
+            var template = document.getElementById('albumGroup').innerHTML,
+            ele = layui.$(obj.elem),
+            data = {
+                id: ele.data('id'),
+                group_id: ele.data("group"),
+            };
+            layui.laytpl(template).render(data, function(html) {
+                top.layer.open({
+                    type: 1,
+                    title: '切换分组',
+                    area: ['620px', '480px'],
+                    content: html,
+			        btn: ['保存', '返回'],
+                    yes(index, dom, that) {
+                        data['new_group_id'] = dom.find('#album-group').val(),
+                        top.layer.close(index),
+                        top.layer.load(2, { shade: ['#fff', .3] }),
+                        ns.silent("{:url('sysAttachUpdate')}", data, res => {
+                            if (res.code == 0) {
+                                groupList.forEach((v, i) => {
+                                    if (v.id == data['group_id']) {
+                                        groupList[i].filecount -= 1
+                                    } else if(v.id == data['new_group_id']) {
+                                        groupList[i].filecount += 1
+                                    }
+                                }),
+                                getGroupList(function() {
+                                    getImageList(current_page, limit)
+                                })
+                            } else {
+                                layer.alert(res.message)
+                            }
+                        })
+                    },
+                    success() {
+                        top.layui.form.render('select')
+                    }
+                })
+            })
+        }),
+
+        form.on('submit(delete-group)', function(obj) {
+            parent.layer.confirm('您确定要删除该分组？', {
+                title: '友情提示',
+                icon: 3,
+                btn: ['是的', '再想想']
+            }, function(i) {
+                parent.layer.close(i),
+                ns.silent("{:url('sysAttachGroupDel')}", {id: album_id}, res => {
+                    if (res.code == 0) {
+                        groupList.forEach((v, i) => {
+                            if (v.id == album_id) delete groupList[i]
+                        }),
+                        album_id = 0,
+                        getGroupList(function() {
+                            getImageList(current_page, limit)
+                        })
+                    } else {
+                        layer.alert(res.message)
+                    }
+                })
+            });
+        }),
+
+        upload.render(uploadOptions);
+    });
+
+    /**
+     * {$typeText}分组
+     */
+    function getGroupList(callback) {
+        var template = document.getElementById('albumGroupItem').innerHTML;
+        layui.laytpl(template).render({
+            list: groupList
+        }, function(html) {
+            var group = $('#group-list');
+            group.html(html),
+            group.children().on("click", function() {
+                $(this).addClass("active").siblings().removeClass("active");
+                album_id = $("#group-list li.active").data("id");
+                getImageList(1, limit);
+            }),
+            typeof(callback) && callback(group)
+        })
+    }
+
+    /**
+     * {$typeText}加载
+     * @param page
+     * @param limit
+     */
+    function getImageList(page, limit) {
+        if (album_id == 0) {
+            var group = $('#group-list');
+            return group.children().eq(0).trigger("click");
+        }
+        $.ajax({
+            url: '{:url("/album/admin/album/index")}',
+            type: "POST",
+            dataType: "JSON",
+            async: false,
+            data: {
+                album_id,
+                limit,
+                page,
+                kw: $(".album-img-sreach").val()
+            },
+            success: function(res) {
+                current_page = page,
+                imageData = res.data,
+                getToolbar(),
+                laytpl($("#albumList").html()).render(res.data, function(data) {
+                    $(".img-list").html(data);
+                });
+
+                if (res.data.count > 0) {
+                    laypage.render({
+                        elem: 'img-list-page',
+                        count: res.data.count,
+                        limit,
+                        curr: page,
+                        jump: function(obj, first) {
+                            if (!first) {
+                                getImageList(obj.curr, obj.limit);
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    }
+
+    //获取选中
+    function getActiveArrayIndex(id) {
+        var delete_index = -1;
+        $.each(active_array, function(i, item) {
+            if (item.id == id) {
+                delete_index = i + 1;
+                return false;
+            }
+        });
+        return delete_index;
+    }
+
+    //删除选中
+    function getDelateActiveArrayIndex(id) {
+        var delete_index;
+        $.each(active_array, function(i, item) {
+            if (item.id == id) {
+                delete_index = i;
+                active_array.splice(i, 1);
+                return false;
+            }
+        });
+        return delete_index;
+    }
+
+    /**
+     * 初始化数据
+     */
+    function init() {
+        getGroupList(function(gl) {
+            gl.children().eq(0).trigger('click')
+        })
+    }
+
+    /**
+     * 刷新操作栏
+     */
+    function getToolbar() {
+        var template = document.getElementById("albumOperator").innerHTML, group = {};
+        if (mode_id != album_id) {
+            mode = 0,
+            mode_id = 0;
+        }
+        if (album_id != 0) {
+            groupList.forEach(v => {
+                if (v.id == album_id) {
+                    group = v
+                }
+            })
+        }
+        laytpl(template).render(group, function(html) {
+            $("#img-action").html(html),
+            ns.clipboard('.layui-btn-clipboard')
+        })
+    }
+    
+    var search = window.location.search, imgNum = parseInt(getSearchString('limit', search));
+    function getSearchString(key, Url) {
+        var str = Url;
+        str = str.substring(1, str.length);
+        var arr = str.split("&");
+        var obj = new Object();
+        for (var i = 0; i < arr.length; i++) {
+            var tmp_arr = arr[i].split("=");
+            obj[decodeURIComponent(tmp_arr[0])] = decodeURIComponent(tmp_arr[1]);
+        }
+        return obj[key];
+    }
+    /**
+     * 添加分组
+     */
+    var flag_add_group = false;
+    function addGroup() {
+        var laryer_add = layer.prompt({
+            formType: 3,
+            title: '添加分组',
+            area: ["350px"],
+            shade: 0,
+            offset: '150px'
+        }, function(value) {
+            if (flag_add_group) return;
+            flag_add_group = true;
+            $.ajax({
+                url: "{:url('sysAttachGroup')}",
+                data: {
+                    "group_name": value,
+                    "type": type_id
+                },
+                type: "POST",
+                dataType: "JSON",
+                success: function(res) {
+                    layer.msg(res.message);
+                    flag_add_group = false;
+                    if (res.code == 0) {
+                        location.reload();
+                    }
+                }
+            })
+        })
+    }
+</script>
 {/block}

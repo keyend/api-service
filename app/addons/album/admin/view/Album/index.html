@@ -132,8 +132,8 @@
 <div class="layui-fluid ui-album">
 	<!-- 搜索框 -->
 	<div class="header flex-space" style="margin-right: 30px;">
-		<button class="layui-btn layui-btn-normal" id="btnUploadImage">上传图片</button>
-		<button class="layui-btn layui-btn-primary ns-text-color ns-border-color" onclick="addGrouping()">添加分组</button>
+		<button class="layui-btn" id="btnUploadImage" style="margin-right: 8px;">上传图片</button>
+		<button class="layui-btn layui-btn-primary" onclick="addGroup()">新增分组</button>
 		<div class="layui-form">
 			<div class="layui-input-inline">
 				<input type="text" name="search_keys" placeholder="请输入图片名称" autocomplete="off" class="layui-input album-img-sreach">
@@ -163,25 +163,6 @@
 </div>
 {/block}
 {block name="scripts"}
-
-<!-- 多图上传 -->
-<script type="text/html" id="multuple_html">
-	<div class="layui-form multuple-list-box">
-		<div class="layui-form-item">
-			<label class="layui-form-label sm">本地图片</label>
-			<ul class="layui-input-block multuple-list">
-				<li class="multuple-list-img" id="ImgUpload">
-					<span class="ns-bg-color">+</span>
-					<span class="ns-text-color-black">点击添加图片</span>
-				</li>
-			</ul>
-		</div>
-		<div class="ns-form-row sm">
-			<button class="layui-btn layui-btn-disabled" disabled="disabled" id="chooseListAction">提交</button>
-			<button class="layui-btn layui-btn-primary" onclick="back()">返回</button>
-		</div>
-	</div>
-</script>
 
 <!-- 图片展示 -->
 <script type="text/html" id="albumList">
@@ -381,7 +362,7 @@
 	 * 添加分组
 	 */
 	var flag_add_group = false;
-	function addGrouping() {
+	function addGroup() {
 		var laryer_add = layer.prompt({
 			formType: 3,
 			title: '添加分组',

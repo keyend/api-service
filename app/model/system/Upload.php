@@ -130,8 +130,9 @@ class Upload extends Model
         })->withAttr('filepath', function($value) use($domain) {
             return $value;
         })->toArray();
+        $sql = $query->getLastSql();
 
-        return compact('list', 'count');
+        return compact('list', 'count', 'sql');
     }
 
     /**

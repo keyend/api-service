@@ -145,7 +145,7 @@ class Controller extends BaseController
     private function addRoute($item = [])
     {
         if (!empty($item['name'])) {
-            $this->app->route->rule($item['rule'], "/goto")->name($item['name']);
+            $this->app->route->rule((!empty($item['addon']) ? $item['addon'] . "/" : "") . $item['rule'], "/goto")->name($item['name']);
         }
     }
 

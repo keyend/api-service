@@ -42,36 +42,41 @@ class UploadGroup extends Model
     /**
      * 返回分组列表
      *
+     * @param integer $type
      * @return void
      */
-    public function getAlbumList()
+    public function getAlbumList($type = 0)
     {
-        return $this->getList(1, 100, [['user_id', '=', S1]]);
+        return $this->getList(1, 100, [['user_id', '=', S1], ['type', '=', $type]]);
     }
 
     /**
      * 返回默认分组
      *
+     * @param integer $type
      * @return void
      */
-    public function getDefaultGroup()
+    public function getDefaultGroup($type = 0)
     {
         $this->createGroup([
+            'type' => $type,
             'user_id' => S1,
             'group_name' => '默认',
+            'is_default' => 1,
             'filecount' => 0
         ]);
-        return $this->getAlbumList();
+        return $this->getAlbumList($type);
     }
 
     /**
      * 返回前端默认分组
      *
+     * @param integer $type
      * @return void
      */
-    public function getAlbumDefaultGroup()
+    public function getAlbumDefaultGroup($type = 0)
     {
-        return $this->where('group_name', '默认')->order('id ASC')->find();
+        return $this->where('type', '=', $type)->where('group_name', '=', '默认')->order('id ASC')->find();
     }
 
     /**
@@ -103,5 +108,36 @@ class UploadGroup extends Model
         }
 
         return $result;
+    }
+
+    /**
+     * 增加分组
+     *
+     * @param array $condition
+     * @param array $data
+     * @return void
+     */
+    public function addGroup($condition = [], $data = [])
+    {
+        if (self::where($condition)->find()) {
+            throw new \Exception("已存在相似分组");
+        }
+
+        $data['user_id'] = S1;
+        return $this->createGroup($data);
+    }
+
+    /**
+     * 刷新分组文件数量
+     *
+     * @param array $ids
+     * @return void
+     */
+    public function refresh($ids = [])
+    {
+        foreach($ids as $group_id) {
+            $filecount = Upload::where([ ['group_id', '=', $group_id] ])->count();
+            $this->where([ ['id', '=', $group_id] ])->update([ 'filecount' => $filecount]);
+        }
     }
 }
