@@ -1,6 +1,9 @@
 .layui-layout-body {
   overflow: auto;
 }
+.layui-layout-body > .layui-body {
+  left: 0px;
+}
 .layui-side-menu .layui-nav,
 .layui-layout-admin .layui-logo,
 .layui-layout-admin .layui-side {

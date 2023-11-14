@@ -1,0 +1,194 @@
+{extend name="$base" /}
+{block name="resources"}
+    <style>
+        .layui-treetable {
+            background-color: #f0f0f0;
+            padding: 0 5px 5px 5px;
+        }
+        .layui-treetable .layui-form {
+            position: relative;
+            height: 480px;
+            overflow: auto;
+        }
+        .layui-treetable .layui-table {
+            padding-top: 100px;
+        }
+        .col_id {
+            width: 60px;
+        }
+        .action_col {
+            width: 200px;
+        }
+        .layui-table thead th {
+            background-color: #d4d8e1!important;
+        }
+    </style>
+{/block}
+{block name="main"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form layui-form-filter">
+            <div class="layui-form-item" style="margin-bottom: 0px;">
+                <div class="layui-inline">
+                    <label class="layui-form-label">记录筛选</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="keyword" placeholder="请输入关键字" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-sm" lay-submit lay-filter="LAY-btn-search">
+                        <i class="layui-icon layui-icon-search"></i>
+                        搜索
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!---->
+        <table id="LAY-list-table" lay-filter="LAY-list-table"></table>
+    </div>
+</div>
+{/block}
+{block name="scripts"}
+<!-- 工具栏 -->
+<script type="text/html" id="table-toolbar">
+    <span class="layui-btn-container" style="margin-left: -15px;">
+        {if checkAccess("sysAreaAdd")}
+        <button class="layui-btn layui-btn-sm" lay-event="add">
+            <i class="layui-icon layui-icon-add-1"></i>添加地区
+        </button>
+        {/if}
+    </span>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="table-action">
+    <div class="layui-btn-container layui-btn-group" data-values="{{=JSON.stringify(d)}}">
+        {if checkAccess('sysAreaAdd')}
+        <a class="layui-btn layui-btn-xs" lay-event="add"><i class="layui-icon layui-icon-add-1"></i>添加</a>
+        {/if}
+        {if checkAccess('sysAreaEdit')}
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i>编辑</a>
+        {/if}
+        {if checkAccess('sysAreaDel')}
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon layui-icon-delete"></i>删除</a>
+        {/if}
+    </div>
+</script>
+
+<script>
+    layui.use(['treeTable', 'form'], function() {
+        var treeTable = layui.treeTable
+        , pageTable
+        , form = layui.form
+        , levels = ['', '省级', '市级', '区县', '乡镇']
+        , active = {
+            cols: [[
+                {type: 'checkbox'},
+                {field: 'id', title: 'ID', width: 100, sort: true},
+                {field: 'areaname', title: '区域名', width: 180},
+                {field: 'shortname', title: '简称', edit: true},
+                {field: 'level', title: '层级', width: 70, templet(d) {
+                    return levels[d.level]
+                }},
+                {fixed: "right", title: "操作", width: 198, align: "center", toolbar: "#table-action"} 
+            ]],
+            add(o){
+                ns.open("{:url('sysAreaAdd')}?id=" + o.data.id, '添加区域', [ '660px', '450px' ]).then(() => {
+                    active.reload()
+                })
+            },
+            edit(o) {
+                ns.open("{:url('sysAreaEdit')}?id=" + o.data.id, '编辑区域', [ '660px', '450px' ]).then(() => {
+                    active.reload()
+                })
+            },
+            del(e) {
+                parent.layer.confirm('您确定要删除该区域？', {
+                    title: '友情提示',
+                    icon: 3,
+                    btn: ['是的', '再想想']
+                }, function(i) {
+                    parent.layer.close(i),
+                    ns.silent("{:url('sysAreaDel')}", {id: e.data.id}, res => {
+                        if (res.code == 0) {
+                            setTimeout(() => active.reload(), 100)
+                        } else {
+                            layer.alert(res.message)
+                        }
+                    })
+                })
+            },
+            reload() {
+                pageTable.reloadData();
+            },
+            render() {
+                pageTable = treeTable.render({
+                    elem: '#LAY-list-table',
+                    url: location.href,
+                    tree: {
+                        enable: true,
+                        customName: {
+                            name: 'areaname',
+                            pid: 'parentid'
+                        },
+                        async: {
+                            enable: true,
+                            url: location.href,
+                            where: {},
+                            autoParam: ["parent_id=id", "level"]
+                        }
+                    },
+                    toolbar: '#table-toolbar',
+                    cols: active.cols,
+                    page: true,
+                    limit: 100,
+                    height: '500px',
+                    limits: [100, 200, 300, 500],
+                    parseData: function(res) {
+                        return {
+                            code: res.code,
+                            msg: res.message,
+                            count: res.data.count,
+                            data: res.data.list
+                        }
+                    }
+                }),
+
+                treeTable.on("toolbar(LAY-list-table)", function (o) {
+                    var config = o.config;
+                    var tableId = config.id;
+                    var status = treeTable.checkStatus(tableId);
+                    active[o.event] ? active[o.event].call(this, status) : '';
+                });
+
+                treeTable.on('tool(LAY-list-table)', function (e) {
+                    active[e.event] ? active[e.event].call(this, e) : '';
+                })
+            }
+        };
+
+        form.on('submit(LAY-btn-search)', function(data){
+            var field = data.field, async = field.keyword == '';
+            pageTable.reload({
+                where: field,
+                page: { curr: 1 },
+                tree: {
+                    enable: true,
+                    async: {
+                        enable: async
+                    },
+                    customName: {
+                        name: 'areaname',
+                        pid: 'parentid'
+                    }
+                }
+            });
+            return false;
+        }),
+
+        window.addEventListener("load", function() {
+            active.render()
+        })
+    })
+</script>
+{/block}

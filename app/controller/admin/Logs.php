@@ -64,6 +64,19 @@ class Logs extends Controller
     }
 
     /**
+     * 清空日志
+     *
+     * @return void
+     */
+    public function clear(LogsModel $logs)
+    {
+        if (IS_AJAX) {
+            $logs->clear();
+            return $this->success();
+        }
+    }
+
+    /**
      * 日志模板
      *
      * @return void

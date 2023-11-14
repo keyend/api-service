@@ -1,0 +1,72 @@
+{extend name="base" /}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            <div class="layui-row layui-col-space10 layui-form-item">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">上级区域：</label>
+                    <div class="layui-input-block">
+                        <input type="hidden" name="parent_id" value="{$edit.parent.id ?? 0}" />
+                        <input type="text" class="layui-input" value="{$edit.parent.areaname ?? ''}" disabled />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">区域名称：</label>
+                    <div class="layui-input-block">
+                        <div class="layui-col-xs5">
+                            <input type="text" name="areaname" lay-verify="required" placeholder="显示区域名称" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.areaname}" />
+                        </div>
+                        <div class="layui-col-xs7">
+                            <label class="layui-form-label">简称：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="shortname" lay-verify="required" placeholder="显示区域简称" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.shortname}" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">邮编：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="zipcode" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.zipcode.code}" />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">经度：</label>
+                    <div class="layui-input-block">
+                        <div class="layui-col-xs5">
+                            <input type="text" name="lng" lay-verify="required" placeholder="0.0000000" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.lng??''}" />
+                        </div>
+                        <div class="layui-col-xs7">
+                            <label class="layui-form-label">纬度：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="lat" lay-verify="required" placeholder="0.0000000" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.lat??''}" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{/block}
+{block name="scripts"}
+<script>
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form;
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                ns.close(res)
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

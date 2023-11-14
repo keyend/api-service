@@ -15,6 +15,12 @@
                         <i class="layui-icon layui-icon-search"></i>
                         搜索
                     </button>
+                    {if checkAccess('sysLogsClear')}
+                    <button class="layui-btn layui-btn-sm layui-btn-primary" lay-submit lay-filter="LAY-btn-clear">
+                        <i class="layui-icon layui-icon-fonts-clear"></i>
+                        清空日志
+                    </button>
+                    {/if}
                 </div>
             </div>
         </div>
@@ -72,6 +78,22 @@
             });
             return false;
         }),
+        {if checkAccess('sysLogsClear')}
+        form.on('submit(LAY-btn-clear)', function(data){
+            parent.layer.confirm('您确定要清空所有（登录、操作）日志记录吗？', {
+                title: '友情提示',
+                icon: 3,
+                btn: ['是的', '再想想']
+            }, function(i) {
+                parent.layer.close(i),
+                ns.silent("{:url('sysLogsClear', ['type' => $type])}", {}, res => {
+                    if (res.code == 0) {
+                        location.reload();
+                    }
+                })
+            })
+        }),
+        {/if}
         window.addEventListener("load", function() {
             active.render()
         });

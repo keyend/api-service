@@ -224,6 +224,7 @@ class User extends Model
                     'create_time'
                 ], true));
                 Db::commit();
+                $this->logger('logs.sys.user.create', 'CREATEED', $data);
             } catch(\Exception $e) {
                 throw new \Exception($e->getMessage());
                 Db::rollback();
@@ -244,6 +245,7 @@ class User extends Model
     public function editUser($data = [])
     {
         Db::transaction(function () use(&$data) {
+            $originData = $this->getData();
             $userData = array_keys_filter($data, [
                 'username',
                 'password',
@@ -261,6 +263,7 @@ class User extends Model
             ]);
             $this->save($userData);
             Db::commit();
+            $this->logger('logs.sys.user.edit', 'UPDATED', [$originData, $this->getData()]);
         });
     }
 

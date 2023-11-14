@@ -101,7 +101,7 @@
             "installation-source": "dist",
             "autoload": {
                 "psr-4": {
-                    "Doctrine\\\Annotations\\": "lib/Doctrine/Common/Annotations"
+                    "Doctrine\\Annotations\\": "lib/Doctrine/Common/Annotations"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",

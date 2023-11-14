@@ -56,9 +56,13 @@ class Logs extends Model
         if (!isset($params)) $params = [];
         if (!isset($type)) $type = 'DOSOME';
 
-        if (defined('S2')) {
+        if (defined('S2') && !isset($params['username'])) {
             $params['username'] = S2;
             $params['realname'] = S7;
+            $params['ip'] = SA;
+        }
+
+        if (defined('SA') && !isset($params['ip'])) {
             $params['ip'] = SA;
         }
 
@@ -192,5 +196,15 @@ class Logs extends Model
         ]);
 
         return $result;
+    }
+
+    /**
+     * 清空记录
+     *
+     * @return void
+     */
+    public function clear() 
+    {
+        \think\facade\Db::query("TRUNCATE TABLE {$this->getTable()}");
     }
 }

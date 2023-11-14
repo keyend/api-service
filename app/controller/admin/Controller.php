@@ -132,7 +132,6 @@ class Controller extends BaseController
         // $crumbs = parseTree($crumbs, 'rule_id', 'parent_id', 'children');
         // $this->assign("crumbs", $crumbs);
         // var_dump($rule);
-        // var_dump($menus);die;
         return $menus;
     }
 
