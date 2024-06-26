@@ -68,7 +68,7 @@
         {{# if (d.combo_method == 'times') { }}
         剩余{{d.times}}次
         {{# } else { }}
-        {{=util.toDateString(d.expire_time, 'yyyy-MM-dd')}}到期
+        {{=layui.util.toDateString(d.expire_time, 'yyyy-MM-dd')}}到期
         {{# } }}
     </div>
 </script>
@@ -80,7 +80,7 @@
 </script>
 
 <script>
-    layui.config({ base: '/static/admin/' }).use(['table', 'form'], function(){
+    layui.config({ base: '/static/admin/' }).use(['table', 'form', 'util'], function(){
         var $ = layui.$ 
         , table = layui.table
         , pageTable

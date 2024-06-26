@@ -130,4 +130,135 @@ class Order extends \app\model\order\Order
     {
         return $this->paymentTypeList;
     }
+
+    /**
+     * 返回时间线统计数据
+     *
+     * @return void
+     */
+    public function getOrderLineData()
+    {
+        $names = [
+            'memberRegister' => '新增会员', 
+            'orderMoney' => '订单金额',
+            'orderCount' => '订单数量'
+        ];
+        $current = time();
+        $beginTime = mktime(0,0,0);
+        $timestamp = strtotime('-1 month', $beginTime);
+        $dates = [];
+        $i = 0;
+        while($timestamp < $current) {
+            $dates[$timestamp] = date('Y-m-d', $timestamp);
+            $timestamp += 86400;
+        }
+
+        $template = [
+            "type" => "line",
+            "markPoint" => [
+                "data" => [
+                    [
+                        "type" => "max",
+                        "name" => "最大值"
+                    ],
+                    [
+                        "type" => "min",
+                        "name" => "最小值"
+                    ]
+                ]
+            ],
+            "itemStyle" => [
+                "normal" => [
+                    "color" => null
+                ]
+            ]
+        ];
+        $list = [];
+        foreach($names as $name => $title) {
+            $item = $template;
+            $method = "getOrderLineData" . ucfirst($name);
+            $item['name'] = $title;
+            $item['data'] = $this->$method($dates);
+
+            $list[] = $item;
+        }
+        $dates = array_values($dates);
+        $names = array_values($names);
+
+        return compact('names', 'dates', 'list');
+    }
+
+    /**
+     * 新注册会员变动
+     *
+     * @param array $dates
+     * @return void
+     */
+    private function getOrderLineDataMemberRegister($dates = [])
+    {
+        $result = [];
+        foreach($dates as $date) {
+            $result[$date] = 0;
+        }
+        $covage = Member::fieldRaw("DATE_FORMAT(FROM_UNIXTIME(create_time), '%Y-%m-%d') date1,COUNT(*) as usage1")->group("DATE_FORMAT(FROM_UNIXTIME(create_time), '%Y-%m-%d')")->select();
+        if (!empty($covage)) {
+            foreach($covage as $item) {
+                $result[$item['date1']] = $item['usage1'];
+            }
+        }
+
+        return array_values($result);
+    }
+
+    /**
+     * 消息订单金额
+     *
+     * @param array $dates
+     * @return void
+     */
+    private function getOrderLineDataOrderMoney($dates = [])
+    {
+        $result = [];
+        foreach($dates as $date) {
+            $result[$date] = 0;
+        }
+        $covage = self::where([['order_status', '=', 2]])
+            ->fieldRaw("DATE_FORMAT(FROM_UNIXTIME(create_time), '%Y-%m-%d') date1,SUM(order_money) as usage1")
+            ->group("DATE_FORMAT(FROM_UNIXTIME(create_time), '%Y-%m-%d')")
+            ->select();
+
+        if (!empty($covage)) {
+            foreach($covage as $item) {
+                $result[$item['date1']] = $item['usage1'];
+            }
+        }
+
+        return array_values($result);
+    }
+
+    /**
+     * 消息订单金额
+     *
+     * @param array $dates
+     * @return void
+     */
+    private function getOrderLineDataOrderCount($dates = [])
+    {
+        $result = [];
+        foreach($dates as $date) {
+            $result[$date] = 0;
+        }
+        $covage = self::where([['order_status', '=', 2]])
+            ->fieldRaw("DATE_FORMAT(FROM_UNIXTIME(create_time), '%Y-%m-%d') date1,COUNT(*) as usage1")
+            ->group("DATE_FORMAT(FROM_UNIXTIME(create_time), '%Y-%m-%d')")
+            ->select();
+
+        if (!empty($covage)) {
+            foreach($covage as $item) {
+                $result[$item['date1']] = $item['usage1'];
+            }
+        }
+
+        return array_values($result);
+    }
 }

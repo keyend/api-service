@@ -118,10 +118,9 @@
         <div class="layui-card-body">
             <div class="layui-tab layui-tab-brief" lay-filter="demo-filter-tab">
                 <ul class="layui-tab-title">
-                    <li id="tab_default">活跃柱形图</li>
-                    <li>活跃分布图</li>
+                    <li id="tab_default">近期活跃</li>
+                    <li>总概况图</li>
                     <li>业务概览</li>
-                    <li>配送概览</li>
                 </ul>
                 <div class="layui-tab-content layui-tab-chart">
                     <div class="layui-tab-item layui-show">
@@ -132,9 +131,6 @@
                     </div>
                     <div class="layui-tab-item">
                         <div data-role="chart" id="order"></div>
-                    </div>
-                    <div class="layui-tab-item">
-                        <div data-role="chart" id="delivery"></div>
                     </div>
                 </div>
             </div>
@@ -246,53 +242,6 @@
                 myChart.setOption(option);
             },
             order(data) {
-                var height = 360 ,myChart ,option;
-                this.height(height),
-                myChart = echarts.init(this[0]),
-                option = {
-                    title: null,
-                    tooltip: {
-                        trigger: 'axis'
-                    },
-                    legend: {
-                        data: data.names
-                    },
-                    grid: {
-                        x: 50,
-                        x2: 50,
-                        y2: 30
-                    },
-                    calculable: true,
-                    xAxis: [
-                        {
-                            type: 'category',
-                            boundaryGap: false,
-                            data: data.dates,
-                            axisLine: {
-                                lineStyle: {
-                                    width: '0'
-                                }
-                            },
-                        },
-                    ],
-                    yAxis: [
-                        {
-                            type: 'value',
-                            axisLine: {
-                                lineStyle: {
-                                    width: '0'
-                                }
-                            },
-                            axisLabel: {
-                                formatter: '{value}'
-                            }
-                        }
-                    ],
-                    series: data.list
-                },
-                myChart.setOption(option);
-            },
-            delivery(data) {
                 var height = 360 ,myChart ,option;
                 this.height(height),
                 myChart = echarts.init(this[0]),
