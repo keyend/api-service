@@ -23,16 +23,15 @@ class Login extends Controller
                 return $this->error($this->validate->getError());
             }
 
-            $type = (int)config('admin.verifyType', 2);
-            $valid = $type === 1 ? $this->validateBehaviour($this->aesDecrypt($this->params['code'], $this->params['key'])) : $this->params['code'];
-            if ($type === 2) {
+            $verifyType = (int)gc("valid.backend", 0);
+            $valid = $verifyType === 2 ? $this->validateBehaviour($this->aesDecrypt($this->params['code'], $this->params['key'])) : $this->params['code'];
+            if ($verifyType === 1) {
                 $name = "sys.captcha.{$this->params['key']}";
                 $code = strtolower(redis()->get($name));
                 redis()->delete($name);
                 $valid = strtolower($valid);
             }
-            $verifyType = 3;
-            if (($verifyType === 1 && true !== $valid) || ($verifyType === 2 && $valid != $code)) {
+            if (($verifyType === 2 && true !== $valid) || ($verifyType === 1 && $valid != $code)) {
                 return $this->error("验证码填写不正确");
             } elseif (true !== $this->request->isLogin()) {
                 $res = $user_model->validate($this->params);
@@ -43,6 +42,7 @@ class Login extends Controller
             }
             return $this->success();
         } else {
+            $this->assign("config", gc("valid,index"));
             return $this->fetch();
         }
     }

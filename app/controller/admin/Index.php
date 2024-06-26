@@ -18,7 +18,7 @@ class Index extends Controller
      */
     public function index(Rule $rule, User $user)
     {
-        $this->assign("title", "应用管理系统");
+        $this->assign("config", gc("index"));
         return $this->fetch();
     }
 }

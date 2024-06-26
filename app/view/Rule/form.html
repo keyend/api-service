@@ -1,6 +1,9 @@
 {extend name="base" /}
 {block name="resources"}
     <style>
+        .layui-layout-body > .layui-card {
+            height: 100%;
+        }
         .layui-form-item {
             margin-bottom: 10px;
         }
@@ -48,9 +51,10 @@
                 <input type="hidden" name="parent_id" value="{$edit.parent_id}" />
                 <div class="layui-form-item">
                     <label class="layui-form-label">上级权限：</label>
-                    <div class="layui-input-block">
+                    <div class="layui-input-inline">
                         <input type="text" class="layui-input" value="{$parentRule.title ?? '[ROOT]'}" readonly />
                     </div>
+                    <div class="layui-form-mid layui-text-em">当前对应的上一级的权限</div>
                 </div>
                 <div class="layui-row">
                     <div class="layui-col-xs9">
@@ -69,7 +73,7 @@
                     </div>
                     <div class="layui-col-xs3 layui-form-icon">
                         <input type="hidden" name="icon" id="icon" value="{$edit.icon}" />
-                        <div class="layui-btn layui-btn-primary" id="btn-iconpicker">
+                        <div class="layui-btn layui-btn-primary" id="btn-iconpicker" style="width: 117px;">
                             <span>
                                 <i class="{$edit.icon}"></i>
                             </span>
@@ -107,24 +111,16 @@
                 </div>
                 <div class="layui-form-item" style="margin-top: -5px;">
                     <div class="layui-inline">
-                        <label class="layui-form-label">是否显示：</label>
-                        <div class="layui-input-block">
-                            <input type="checkbox" name="is_show" title="显示|隐藏" lay-skin="switch" value="1" {if $edit.is_show}checked="true"{/if} />
+                        <label class="layui-form-label">权限类型：</label>
+                        <div class="layui-input-inline">
+                            <select name="type" lay-filter="type">
+                                <option value="0">权限</option>
+                                <option value="1" {if $edit.type == 1} selected="selected"{/if}>菜单</option>
+                                <option value="2" {if $edit.type == 2} selected="selected"{/if}>选项卡</option>
+                                <option value="3" {if $edit.type == 3} selected="selected"{/if}>选项卡(带参数)</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="layui-inline">
-                        <div class="layui-form-mid layui-text-em">开启后，会作为一个菜单页或最终页</div>
-                    </div>
-                </div>
-                <div class="layui-form-item" style="margin-top: -10px;">
-                    <div class="layui-inline">
-                        <label class="layui-form-label">展示界面：</label>
-                        <div class="layui-input-block">
-                            <input type="checkbox" name="is_page" title="页面|菜单" lay-skin="switch" value="1" {if $edit.is_page}checked="true"{/if} />
-                        </div>
-                    </div>
-                    <div class="layui-inline">
-                        <div class="layui-form-mid layui-text-em">开启后，会作为一个最终页下级不显示为菜单</div>
+                        <div class="layui-form-mid layui-text-em">带参数菜单，需要参数才会显示</div>
                     </div>
                 </div>
                 <div class="layui-form-item">
@@ -152,7 +148,7 @@
     </div>
 </div>
 {/block}
-{block name="scripts"}
+{block name="script"}
 <script>
     layui.use(['form'], function(){
         var $ = layui.$

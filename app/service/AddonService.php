@@ -6,6 +6,7 @@ namespace app\service;
  * @version 1.0.0
  */
 use think\Service;
+use think\facade\Cache;
 use app\model\system\Config;
 use app\event\InitAddon;
 use app\event\Constant;
@@ -69,6 +70,38 @@ class AddonService extends Service
     }
 
     /**
+     * 订阅插件事件
+     *
+     * @return void
+     */
+    private function getAddonEvents()
+    {
+        $events = Cache::get("system_addons_events") ?? [];
+        if (empty($events)) {
+            $events = [
+                'bind' => [],
+                'listen' => [],
+                'subscribe' => []
+            ];
+            $addons = $this->app->make(Config::class)->getAddons();
+            $addonPath = $this->app->getRootPath() . "app" . DIRECTORY_SEPARATOR . "addons" . DIRECTORY_SEPARATOR;
+            foreach ($addons as $addon) {
+                $eventPath = $addonPath . $addon . DIRECTORY_SEPARATOR . 'event.php';
+                if (file_exists($eventPath)) {
+                    $current = include $eventPath;
+                    foreach($events as $ev => $values) {
+                        if (isset($current[$ev])) {
+                            $events[$ev] = array_merge($values, $current[$ev]);
+                        }
+                    }
+                }
+            }
+            Cache::tag("config")->set("system_addons_events", $events);
+        }
+        return $events;
+    }
+
+    /**
      * 服务注册
      *
      * @return void
@@ -91,12 +124,17 @@ class AddonService extends Service
             }
 
             if (is_file($appPath . 'event.php')) {
-                $this->loadEvent(include $appPath . 'event.php');
+                $this->app->loadEvent(include $appPath . 'event.php');
             }
 
             if (is_file($appPath . 'middleware.php')) {
                 $this->app->middleware->import(include $appPath . 'middleware.php');
             }
+        }
+
+        $events = $this->getAddonEvents();
+        if (!empty($events)) {
+            $this->app->loadEvent($events);
         }
     }
 }

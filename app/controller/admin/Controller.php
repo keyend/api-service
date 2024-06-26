@@ -7,6 +7,7 @@ namespace app\controller\admin;
  */
 use app\BaseController;
 use app\model\system\Rule;
+use think\Response;
 
 class Controller extends BaseController
 {
@@ -67,6 +68,7 @@ class Controller extends BaseController
             $this->assign('admin', $this->request->user);
             $this->assign('base', $this->app->getRootPath() . "app/view/base.html");
             $this->assign('params', $this->params);
+            $this->assign('get', input('get.'));
             $this->initMenu();
         }
     }
@@ -78,7 +80,7 @@ class Controller extends BaseController
      */
     protected function getMenuList()
     {
-        return $this->app->make(Rule::class)->getList(1, 9999, [ ['module', '=', 'admin'], ['rule_id', 'IN', $this->request->user['access']] ], '`rule_id` as id,`title` as `label`,parent_id,name,module,addon,rule,icon,is_page,is_show')["list"];
+        return $this->app->make(Rule::class)->getList(1, 9999, [ ['module', '=', 'admin'], ['rule_id', 'IN', $this->request->user['access']] ], '`rule_id` as id,`title` as `label`,parent_id,type,name,module,addon,rule,icon,is_page,is_show')["list"];
     }
 
     /**
@@ -131,7 +133,6 @@ class Controller extends BaseController
         // 面包屑
         // $crumbs = parseTree($crumbs, 'rule_id', 'parent_id', 'children');
         // $this->assign("crumbs", $crumbs);
-        // var_dump($rule);
         return $menus;
     }
 
@@ -145,6 +146,7 @@ class Controller extends BaseController
     {
         if (!empty($item['name'])) {
             $this->app->route->rule((!empty($item['addon']) ? $item['addon'] . "/" : "") . $item['rule'], "/goto")->name($item['name']);
+            // var_dump("<!--addRoute({$item['name']}, " . ((!empty($item['addon']) ? $item['addon'] . "/" : "") . $item['rule']) . ")-->");
         }
     }
 
@@ -167,13 +169,15 @@ class Controller extends BaseController
             foreach ($args as $i => $arg) {
                 if (is_array($arg)) {
                     $data = array_splice_value($args, $i);
-                } elseif(is_callable([$this, $args[0]])) {
+                } elseif ($arg instanceof \app\Model) {
+                    $data = $arg;
+                } elseif (is_callable([$this, $args[0]])) {
                     $method = array_splice_value($args, $i);
                     $data = $this->$method(...$args);
-                } elseif(is_callable($args[0])) {
+                } elseif (is_callable($args[0])) {
                     $method = array_splice_value($args, $i);
                     $data = call_user_func($method, $args);
-                } elseif(is_integer($args[0]) || is_numeric($args)) {
+                } elseif (is_integer($args[0]) || is_numeric($args)) {
                     $code = array_splice_value($args, $i);
                 } elseif (is_string($args[0])) {
                     $message = array_splice_value($args, $i);
@@ -183,6 +187,8 @@ class Controller extends BaseController
 
         if (isset($data)) {
             if ($data instanceof Arrayable) {
+                $data = $data->toArray();
+            } elseif ($arg instanceof \app\Model) {
                 $data = $data->toArray();
             } elseif ($data instanceof Response) {
                 return $data;

@@ -89,7 +89,7 @@ class Logs extends Model
             'user_id' => $user_id,
             'content' => $message,
             'params' => json_encode($params, JSON_UNESCAPED_UNICODE),
-            'create_time' => TIMESTAMP
+            'create_time' => time()
         ]);
     }
 

@@ -77,11 +77,12 @@ class Handle extends ThinkExceptionHandle
                     'source'  => $this->getSourceCode($nextException),
                 ];
             } while ($nextException = $nextException->getPrevious());
+            $code = $this->getCode($exception);
             $data = [
-                'code'    => $this->getCode($exception),
+                'code'    => max($code, 500),
                 'message' => $this->getMessage($exception),
                 'traces'  => $traces,
-                'data'   => $this->getExtendData($exception),
+                'data'   => null,
                 'tables'  => [
                     'GET Data'            => $this->app->request->get(),
                     'POST Data'           => $this->app->request->post(),
@@ -93,8 +94,9 @@ class Handle extends ThinkExceptionHandle
             ];
         } else {
             // 部署模式仅显示 Code 和 Message
+            $code = $this->getCode($exception);
             $data = [
-                'code'    => $this->getCode($exception),
+                'code'    => max($code, 500),
                 'message' => $this->getMessage($exception),
                 'data'    => null
             ];
@@ -115,7 +117,7 @@ class Handle extends ThinkExceptionHandle
      */
     protected function convertExceptionToResponse(Throwable $exception): Response
     {
-        if (!$this->isJson && (!defined('IS_JSON') || !IS_JSON)) {
+        if (!$this->isJson && (!defined('IS_JSON') || !IS_JSON) && (!defined('MIDDLEWARE_JSON') || !MIDDLEWARE_JSON)) {
             $response = Response::create($this->renderExceptionContent($exception));
         } else {
             $response = Response::create($this->convertExceptionToArray($exception), 'json');

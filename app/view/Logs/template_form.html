@@ -19,7 +19,7 @@
                     {if $info.id}
                     <input type="text" name="name" value="{$info.name}" class="layui-input layui-disabled" readonly />
                     {else}
-                    <input type="text" name="name" value="{$info.name}" required placeholder="标识，请确保标识的唯一性" lay-verify="required" autocomplete="off" class="layui-input">
+                    <input type="text" name="name" value="{$info.name??''}" required placeholder="标识，请确保标识的唯一性" lay-verify="required" autocomplete="off" class="layui-input">
                     {/if}
                 </div>
             </div>
@@ -29,6 +29,17 @@
                     <textarea placeholder="请输入内容" class="layui-textarea" name="content">{$info.content}</textarea>
                 </div>
             </div>
+
+            {if $info.params != ''}
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <div class="layui-input-block">
+                    <blockquote class="layui-elem-quote">
+                        <div class="content"><strong style="color: #16b777;">参数示例：</strong>{$info.params}</div>
+                    </blockquote>
+                </div>
+            </div>
+            {/if}
 
             <div class="layui-form-item" style="margin-bottom: 0px;">
                 <div class="layui-input-block">
@@ -40,7 +51,7 @@
     </div>
 </div>
 {/block}
-{block name="scripts"}
+{block name="script"}
 <script>
     layui.use(['form'], function(){
         var $ = layui.$

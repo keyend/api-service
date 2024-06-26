@@ -33,7 +33,8 @@
         "topthink/think-queue": "^3.0",
         "aferrandini/phpqrcode": "^1.0",
         "topthink/think-captcha": "^3.0",
-        "phpoffice/phpexcel": "*"
+        "phpoffice/phpexcel": "*",
+        "overtrue/pinyin": "*"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2"

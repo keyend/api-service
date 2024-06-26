@@ -1,0 +1,375 @@
+{extend name="$base" /}
+{block name="resources"}
+<style>
+    .top-panel-number {
+        font-size: 21px!important;
+    }
+    .layui-tab-chart .layui-tab-item {
+        height: 400px;
+        overflow: auto;
+    }
+
+    @media screen and (min-width: 641px) {
+        .top-panel-number span:first-child::after {
+            content: " / ";
+        }
+    }
+
+    @media screen and (max-width: 640px) {
+        .top-panel .layui-row.layui-col-space5 {
+            position: relative;
+        }
+        .top-panel .layui-row.layui-col-space5::after{
+            content: " ";
+            display: table;
+            clear: both;
+        }
+        .top-panel-number {
+            line-height: 26px;
+            font-size: 14px!important;
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: left;
+            background: -webkit-linear-gradient(to right, rgba(255,255,255,0)0%,rgba(255,255,255,255.5)66%, rgba(255,255,255,1)99%);
+        }
+        .top-panel-number span {
+            display: block;
+        }
+        .top-panel-tips {
+            float: right;
+        }
+    }
+</style>
+{/block}
+{block name="body"}
+<div class="layui-fluid" style="padding-top: 15px;" id="container"></div>
+<script id="dashboard" type="text/html">
+    <div class="layui-row layui-col-space10">
+        <div class="layui-col-xs6 layui-col-md3">
+            <div class="layui-card top-panel">
+                <div class="layui-card-header">今日订单(单数/金额)</div>
+                <div class="layui-card-body">
+                    <div class="layui-row layui-col-space5">
+                        <div class="layui-col-xs8 layui-col-md8 top-panel-number" style="color: #28333E;">
+                            <span>{{d.today.count}}</span>
+                            <span>&yen;{{d.today.money}}</span>
+                        </div>
+                        <div class="layui-col-xs4 layui-col-md4 top-panel-tips text-right">
+                            <span class="fa fa-first-order" style="font-size: 40px"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-xs6 layui-col-md3">
+            <div class="layui-card top-panel">
+                <div class="layui-card-header">今日会员(新注册/总会员)</div>
+                <div class="layui-card-body">
+                    <div class="layui-row layui-col-space5">
+                        <div class="layui-col-xs8 layui-col-md8 top-panel-number" style="color: #28333E;">
+                            <span>{{d.today.member_register}}</span>
+                            <span>{{d.today.member_total}}</span>
+                        </div>
+                        <div class="layui-col-xs4 layui-col-md4 top-panel-tips text-right">
+                            <span class="fa fa-plane" style="font-size: 40px"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-xs6 layui-col-md3">
+            <div class="layui-card top-panel">
+                <div class="layui-card-header">本月订单(单数/金额)</div>
+                <div class="layui-card-body">
+                    <div class="layui-row layui-col-space5">
+                        <div class="layui-col-xs8 layui-col-md8 top-panel-number" style="color: #28333E;">
+                            <span>{{d.monthly.count}}</span>
+                            <span>&yen;{{d.monthly.money}}</span>
+                        </div>
+                        <div class="layui-col-xs4 layui-col-md4  top-panel-tips text-right">
+                            <span class="fa fa-reorder" style="font-size: 40px"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-xs6 layui-col-md3">
+            <div class="layui-card top-panel">
+                <div class="layui-card-header">订单总览(单数/金额)</div>
+                <div class="layui-card-body">
+                    <div class="layui-row layui-col-space5">
+                        <div class="layui-col-xs8 layui-col-md8 top-panel-number" style="color: #28333E;">
+                            <span>{{d.total.count}}</span>
+                            <span>&yen;{{d.total.money}}</span>
+                        </div>
+                        <div class="layui-col-xs4 layui-col-md4 top-panel-tips text-right">
+                            <span class="fa fa-inbox" style="font-size: 40px"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card" style="margin-top: 15px;">
+        <div class="layui-card-body">
+            <div class="layui-tab layui-tab-brief" lay-filter="demo-filter-tab">
+                <ul class="layui-tab-title">
+                    <li id="tab_default">活跃柱形图</li>
+                    <li>活跃分布图</li>
+                    <li>业务概览</li>
+                    <li>配送概览</li>
+                </ul>
+                <div class="layui-tab-content layui-tab-chart">
+                    <div class="layui-tab-item layui-show">
+                        <div data-role="chart" id="shape"></div>
+                    </div>
+                    <div class="layui-tab-item">
+                        <div data-role="chart" id="pie"></div>
+                    </div>
+                    <div class="layui-tab-item">
+                        <div data-role="chart" id="order"></div>
+                    </div>
+                    <div class="layui-tab-item">
+                        <div data-role="chart" id="delivery"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+{/block}
+{block name="scripts"}
+<script>
+    layui.config({ base: '/static/admin/' }).extend({
+        echarts: 'lib/echarts'
+    }).use(['layer', 'laytpl', 'echarts', 'element'], function() {
+        var $ = layui.jquery
+        , layer = layui.layer
+        , laytpl = layui.laytpl
+        , element = layui.element
+        , echarts = layui.echarts
+        , loader
+        , active = {
+            refresh(callable) {
+                loader = top.layer.load(2),
+                $.ajax({
+                    type: 'GET',
+                    url: location.href,
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    complete: () => top.layer.close(loader),
+                    success(r) {
+                        if (r.code != 0) {
+                            top.layer.msg(r.message);
+                        }
+                        var template = $('#dashboard').html();
+                        laytpl(template).render(r.data, v => {
+                            $('#container').html(v),
+                            typeof(callable)=='function' && callable()
+                        })
+                    }
+                })
+            },
+            shape(data) {
+                var height = 50 * data.customer.length
+                ,myChart
+                ,option;
+                this.height(height),
+                myChart = echarts.init(this[0]),
+                option = {
+                    title: null,
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    legend: {},
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'value',
+                        boundaryGap: [0, 0.01]
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: data.customer
+                    },
+
+                    series: data.list
+                },
+                myChart.setOption(option);
+            },
+            pie(data) {
+                var height = 360
+                ,myChart
+                ,option;
+                this.height(height),
+                myChart = echarts.init(this[0]),
+                option = {
+                    title: null,
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b} : {c} ({d}%)'
+                    },
+                    legend: {
+                        type: 'scroll',
+                        orient: 'vertical',
+                        right: 10,
+                        top: 20,
+                        bottom: 20,
+                        data: data.customer
+                    },
+                    series: [{
+                        name: '姓名',
+                        type: 'pie',
+                        radius: '55%',
+                        center: ['40%', '50%'],
+                        data: data.list,
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }]
+                },
+                myChart.setOption(option);
+            },
+            order(data) {
+                var height = 360 ,myChart ,option;
+                this.height(height),
+                myChart = echarts.init(this[0]),
+                option = {
+                    title: null,
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: data.names
+                    },
+                    grid: {
+                        x: 50,
+                        x2: 50,
+                        y2: 30
+                    },
+                    calculable: true,
+                    xAxis: [
+                        {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: data.dates,
+                            axisLine: {
+                                lineStyle: {
+                                    width: '0'
+                                }
+                            },
+                        },
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            axisLine: {
+                                lineStyle: {
+                                    width: '0'
+                                }
+                            },
+                            axisLabel: {
+                                formatter: '{value}'
+                            }
+                        }
+                    ],
+                    series: data.list
+                },
+                myChart.setOption(option);
+            },
+            delivery(data) {
+                var height = 360 ,myChart ,option;
+                this.height(height),
+                myChart = echarts.init(this[0]),
+                option = {
+                    title: null,
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: data.names
+                    },
+                    grid: {
+                        x: 50,
+                        x2: 50,
+                        y2: 30
+                    },
+                    calculable: true,
+                    xAxis: [
+                        {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: data.dates,
+                            axisLine: {
+                                lineStyle: {
+                                    width: '0'
+                                }
+                            },
+                        },
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            axisLine: {
+                                lineStyle: {
+                                    width: '0'
+                                }
+                            },
+                            axisLabel: {
+                                formatter: '{value}'
+                            }
+                        }
+                    ],
+                    series: data.list
+                },
+                myChart.setOption(option);
+            }
+        };
+
+        element.on('tab(demo-filter-tab)', function(data){
+            var that = data.elem.find('div[data-role="chart"]').eq(data.index), id = that.attr("id");
+            if (that.data("init") != 1) {
+                that.data("init", 1),
+                loader = top.layer.load(2),
+                $.ajax({
+                    type: 'GET',
+                    url: location.href + "?patch=" + id,
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    complete: () => top.layer.close(loader),
+                    success(r) {
+                        if (r.code != 0) {
+                            top.layer.msg(r.message);
+                        }
+
+                        active[id].call(that,r.data)
+                    }
+                })
+            }
+        }),
+        
+        active.refresh(function() {
+            $('#tab_default').trigger("click");
+        });
+
+        window.onresize = function() {
+            // echartsRecords.resize();
+        }
+    });
+</script>
+{/block}

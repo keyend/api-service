@@ -7,7 +7,17 @@ return [
         'HttpRun'  => [],
         'HttpEnd'  => [],
         'LogLevel' => [],
-        'LogWrite' => []
+        'LogWrite' => [],
+        'MemberRegister' => [],
+        'MemberTrash' => [
+            'app\event\MemberTrash'
+        ],
+        'MemberUpdate' => [],
+        'MemberAccountChange' => [],
+        'OrderPay' => [
+            'app\event\OrderPay'
+        ],
+        'OrderComplete' => [],
     ],
     'subscribe' => [],
 ];

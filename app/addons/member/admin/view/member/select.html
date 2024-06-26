@@ -1,0 +1,228 @@
+{extend name="$base" /}
+{block name="resources"}
+<style>
+    .layui-card {
+        height: 100%;
+    }
+    .layui-card-body {
+        height: calc(100% - 40px);
+    }
+    .userinfo {
+        padding: 4px 0;
+        display: flex;
+    }
+    .userinfo .avatar {
+        width: 40px;
+        height: 40px;
+        position: relative;
+        margin-right: 5px;
+    }
+    .userinfo .avatar .image {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+    .userinfo .avatar .image img{
+        min-height: 100%;
+        min-width: 100%;
+        max-width: 140%;
+        max-height: 140%;
+        object-fit: contain;
+    }
+    .userinfo .avatar .type {
+        position: absolute;
+        right: -5px;
+        bottom: 0px;
+        width: 16px;
+        height: 16px;
+        background-size: 100%;
+        border-radius: 50%;
+        z-index: 1;
+    }
+    .userinfo .avatar .layui-icon {
+        width: 100%;
+        height: 100%;
+        display: block;
+        text-align: center;
+        line-height: 40px;
+        font-size: 20px!important;
+        background-color: #d7dce0;
+        border-radius: 50%;
+    }
+    .userinfo .avatar .type.toutiao {
+        background-image: url('/static/images/member/douyin.jpg');
+    }
+    .userinfo .avatar .type.wechat {
+        background-image: url('/static/images/member/wechat.jpg');
+    }
+    .userinfo .avatar .type.wxapp {
+        background-image: url('/static/images/member/weapp.jpg');
+    }
+    .userinfo .info {
+        line-height: 16px;
+        padding: 4px;
+    }
+    .userinfo .nickname {
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .layui-table-cell {
+        height: unset;
+        line-height: unset;
+        padding: 6px 15px 0 15px;
+    }
+    .layui-table-cell.laytable-cell-1-0-1 {
+        overflow: unset;
+    }
+    .layui-table-view .layui-table[lay-size=lg] .layui-table-cell {
+        line-height: 50px;
+    }
+</style>
+{/block}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form layui-form-filter">
+            <div class="layui-form-item" style="margin-bottom: 0px;">
+                <div class="layui-inline">
+                    <label class="layui-form-label">记录筛选</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="keyword" placeholder="请输入关键字" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-sm" lay-submit lay-filter="LAY-btn-search">
+                        <i class="layui-icon layui-icon-search"></i>
+                        搜索
+                    </button>
+                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">
+                        <i class="layui-icon layui-icon-fonts-clear"></i>
+                        清空
+                    </button>
+                </div>
+            </div>
+        </form>
+        <!---->
+        <table id="LAY-list-table" lay-filter="LAY-list-table"></table>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/html" id="table-userinfo">
+    <div class="userinfo">
+        <div class="avatar">
+            <div class="image">
+                {{#if (d.avatar != '') { }}
+                <img src="{{d.avatar}}" />
+                {{# } else { }}
+                <i class="layui-icon layui-icon-user"></i>
+                {{# } }}
+            </div>
+            {{# if (d.wxapp_openid != '') { }}
+            <i class="type wxapp"></i>
+            {{# } else if (d.wechat_openid != '') { }}
+            <i class="type wechat"></i>
+            {{# } else if (d.toutiao_openid != '') { }}
+            <i class="type toutiao"></i>
+            {{# } }}
+        </div>
+        <div class="info">
+            <div class="nickname">{{d.nickname}}</div>
+            <div class="mobile">{{d.mobile}}</div>
+        </div>
+    </div>
+</script>
+
+<script>
+    var active_array = {};
+
+    layui.config({ base: '/static/admin/' }).use(['table', 'form'], function(){
+        var $ = layui.$ 
+        , table = layui.table
+        , pageTable
+        , form = layui.form
+        , active = {
+            cols: [
+                [{
+                    type: "radio",
+                    title: "#",
+                    width: 60
+                }, {
+                    title: "会员ID",
+                    width: 160,
+                    templet(d) {
+                        return d.member_id
+                    }
+                }, {
+                    title: "会员信息",
+                    minWidth: 200,
+                    templet: '#table-userinfo'
+                }, {
+                    title: "推荐人",
+                    width: 160,
+                    templet(d) {
+                        return d.source ? d.source.member_id : '----'
+                    }
+                }, {
+                    field: "create_time",
+                    title: "创建时间",
+                    minWidth: 160,
+                    sort: true,
+                    templet(d) {
+                        return d.create_time == 0 ? '----' : d.create_time;
+                    }
+                }]
+            ],
+            render() {
+                pageTable = table.render({
+                    elem: "#LAY-list-table",
+                    url: location.href,
+                    cols: active.cols,
+                    response: { msgName: 'message' },
+                    page: !0,
+                    limit: 20,
+                    limits: [20, 100, 200, 300, 500],
+                    height() {
+                        var _ph = $('#LAY-list-table').parent().height();
+                        var _rh = _ph - 57;
+                        return _rh;
+                    },
+                    text: { none: "无数据" },
+                    parseData: function(res) {
+                        return {
+                            code: res.code,
+                            msg: res.message,
+                            count: res.data.count,
+                            data: res.data.list
+                        }
+                    },
+                    done: function() {
+                        ns.page = this.page.curr;
+                    }
+                }),
+                table.on('radio(LAY-list-table)', function(obj){
+                    active_array = obj.data
+                });
+            }
+        };
+
+        form.on('submit(LAY-btn-search)', function(data){
+            var field = data.field;
+            table.reload('LAY-list-table', { 
+                where: field,
+                page: { curr: 1 }
+            });
+            return false;
+        }),
+
+        window.addEventListener("load", function() {
+            active.render()
+        });
+    });
+
+	//获取选择会员信息
+	function getCheckItem(callback) {
+		if (typeof callback == "function") callback(active_array);
+	}
+</script>
+{/block}

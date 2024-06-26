@@ -1,4 +1,4 @@
-{extend name="base" /}
+{extend name="$base" /}
 {block name="resources"}
     <style>
         .layui-form-label {
@@ -26,7 +26,7 @@
     </div>
 </div>
 {/block}
-{block name="scripts"}
+{block name="script"}
 <script>
     layui.use(['form','jquery'],function(){
         let form = layui.form;

@@ -1,0 +1,640 @@
+{extend name="$base" /}
+{block name="resources"}
+<link rel="stylesheet" href="/static/cascader/cascader/cascader.css?_={$version}" />
+<script src="/static/cascader/cascader/cascader.js?_={$version}"></script>
+<style>
+    .userinfo { 
+        display: flex;
+        flex-flow: row wrap;
+        /* align-items: center; */
+    }
+    .avatar-wrap {
+        width: 85px;
+        margin-right: 16px;
+        text-align: center;
+    }
+    .userinfo .avatar {
+        flex-shrink: 0;
+        display: inline-block;
+        width: 80px;
+        height: 80px;
+        text-align: center;
+        line-height: 80px;
+        overflow: hidden;
+    }
+    .userinfo .avatar img {
+        min-width: 100%;
+        min-height: 100%;
+        max-width: 160%;
+        max-height: 160%;
+    }
+    .image-uploader .item {
+        width: 80px;
+        height: 80px;
+        line-height: 80px;
+    }
+    .userinfo .info {
+        flex: 2;
+        max-width: 800px;
+        line-height: 1.8;
+        padding-right: 30px;
+        margin-right: auto;
+    }
+    .userinfo span.value {
+        display: inline-block;
+        padding: 5px 0;
+        margin-right: 3px;
+    }
+    .userinfo span.value + i {
+        font-size: 16px;
+        color: transparent;
+    }
+    .userinfo .layui-form-item.movable:hover span.value + i {
+        color: #666;
+        cursor: pointer;
+    }
+    .userinfo .account {
+        flex: 1;
+        padding-left: 30px;
+        width: 400px;
+    }
+    .userinfo .layui-elem-quote {
+        padding: 0 15px;
+        background-color: transparent;
+        font-weight: bold;
+        margin: 0 0 15px 0;
+    }
+    .userinfo .layui-row {
+        margin-bottom: 30px;
+    }
+    .userinfo .layui-input:read-only {
+        background-color: transparent;
+        border-width: 0px;
+    }
+    .userinfo .layui-select-title .layui-input:read-only {
+        border-width: 1px!important;
+    }
+    .userinfo .layui-form-item {
+        padding-bottom: 10px;
+        padding-top: 10px;
+        margin-bottom: 0px;
+        border-bottom: 1px dotted #eee;
+    }
+    .userinfo .layui-form-label {
+        width: 90px;
+    }
+    .userinfo .el-cascader {
+        width: 90%;
+        line-height: 32px;
+    }
+    .el-input__inner {
+        line-height: 32px;
+        height: 32px;
+    }
+    .layui-card-form {
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 1px 5px 0 rgba(0,0,0,.06);
+        padding-bottom: 0px;
+    }
+    
+    @media screen and (min-width: 768px) {
+        .userinfo .info .layui-card-form {
+            width: 800px;
+        }
+    }
+</style>
+{/block}
+{block name="main"}
+<form class="layui-card layui-form" action="" lay-filter="component-form-element">
+    <div class="layui-card-body">
+        <!---->
+        <div class="userinfo">
+            <div class="avatar-wrap">
+                <div class="avatar">
+                    <div class="image-uploader" data-limit="1" data-event="funs.changeAvatar()">
+                        <input type="hidden" name="avatar" value="{$item['avatar'] ?? ''}" />
+                        <div class="inner"></div>
+                    </div>
+                </div>
+                <div class="text-center mt">
+                    <input
+                        type="checkbox" 
+                        id="is_virtual"
+                        name="is_virtual" 
+                        lay-skin="switch" 
+                        lay-text="虚拟会员|普通会员" 
+                        lay-filter="is_virtual"
+                        value="1"
+                        {if $item.is_virtual}
+                        checked
+                        {/if}
+                    />
+                </div>
+            </div>
+            <div class="info">
+                <div class="layui-card layui-card-form">
+                    <blockquote class="layui-elem-quote">
+                        基本信息
+                    </blockquote>
+                    <div class="layui-row">
+                        <div class="layui-col-md6 layui-col-xs12">
+                            <div class="layui-form-item movable" data-name="username">
+                                <label class="layui-form-label sm">用户名：</label>
+                                <div class="layui-input-inline">
+                                    <span class="value">{$item.username??''}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6 layui-col-xs12">
+                            <div class="layui-form-item movable" data-name="mobile">
+                                <label class="layui-form-label sm">手机号：</label>
+                                <div class="layui-input-inline">
+                                    <span class="value">{$item.mobile??''}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6 layui-col-xs12">
+                            <div class="layui-form-item movable" data-name="nickname">
+                                <label class="layui-form-label sm">会员昵称：</label>
+                                <div class="layui-input-inline">
+                                    <span class="value">{$item.nickname??''}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6 layui-col-xs12" data-name="realname">
+                            <div class="layui-form-item movable">
+                                <label class="layui-form-label sm">真实姓名：</label>
+                                <div class="layui-input-inline">
+                                    <span class="value">{$item.realname??''}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6 layui-col-xs12">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">创建时间：</label>
+                                <div class="layui-input-inline">
+                                    <span class="value">{$item.create_time|date='Y-m-d H:i:s'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6 layui-col-xs12">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">最后登录：</label>
+                                <div class="layui-input-inline">
+                                    <span class="value">{if $item.lastlogin_time != 0}{$item.lastlogin_time|date='Y-m-d H:i:s'}{else}----{/if}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs12">
+                            <div class="layui-form-item movable" data-name="label">
+                                <label class="layui-form-label sm">会员标签：</label>
+                                <div class="layui-input-block">
+                                    <span class="value">
+                                        {foreach $item.label_list as $key => $v}
+                                        <span class="layui-badge" style="background-color: #{php}echo substr((string)(pi() * $key), -6);{/php}">@{$v.labelname}</span>
+                                        {/foreach}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs12" style="margin-bottom: 12px;">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">会员等级：</label>
+                                <div class="layui-input-inline">
+                                    <select name="level_id" lay-verify="required" lay-filter="level_id">
+                                        <option value="">选择等级</option>
+                                        {foreach $level_list as $v}
+                                        <option value="{$v.level}" {if $v.level == $item.level_id} selected="selected"{/if}>{$v.levelname}</option>
+                                        {/foreach}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-xs12">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">所在地址：</label>
+                                <div class="layui-input-block">
+                                    <input type="hidden" name="province_id" id="province_id" value="{$item.province_id??'0'}" />
+                                    <input type="hidden" name="city_id" id="city_id" value="{$item.city_id??'0'}" />
+                                    <input type="hidden" name="district_id" id="district_id" value="{$item.district_id??'0'}" />
+                                    <input type="hidden" name="street_id" id="street_id" value="{$item.street_id??'0'}" />
+                                    <input type="hidden" name="longitude" id="longitude" value="{$item.longitude??0}" />
+                                    <input type="hidden" name="latitude" id="latitude" value="{$item.latitude??0}" />
+                                    <input type="hidden" name="address" id="address" value="{$item.address??''}" />
+                                    <input type="hidden" name="full_address" id="full_address" value="{$item.full_address??''}" />
+                                    <input id="cascader" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item mt" style="border-bottom: 0px; margin-bottom: 20px;">
+                            <label class="layui-form-label">会员备注：</label>
+                            <div class="layui-input-block">
+                                <textarea 
+                                    class="layui-textarea" 
+                                    name="remark" 
+                                    style="width: 90%;min-height: 80px"
+                                >{$item.remark ?? ''}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-card layui-card-form">
+                    <blockquote class="layui-elem-quote">
+                        OPENID
+                    </blockquote>
+                    <div class="layui-row">
+                        <div class="layui-col-md6 layui-col-xs12">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">微信公众号：</label>
+                                <div class="layui-input-inline">
+                                    <input class="layui-input len-mid" value="{$item.wechat_openid}" disabled="">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6 layui-col-xs12">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">微信小程序：</label>
+                                <div class="layui-input-inline">
+                                    <input class="layui-input len-mid" value="{$item.wxapp_openid}" disabled="">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6 layui-col-xs12">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label sm">头条小程序：</label>
+                                <div class="layui-input-inline">
+                                    <input class="layui-input len-mid" value="{$item.toutiao_openid}" disabled="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="account">
+                <div class="layui-card layui-card-form">
+                    <blockquote class="layui-elem-quote">
+                        会员账户
+                    </blockquote>
+                    <div class="layui-row">
+                        <div class="layui-form-item movable" data-name="balance_money">
+                            <label class="layui-form-label sm">账户余额：</label>
+                            <div class="layui-inline">
+                                <span class="value">{$item.balance_money??0}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{/block}
+{block name="script"}
+{include file="../../../../view/Common/uploadImage" /}
+<!-- 购买套餐 -->
+<script type="text/html" id="dialog">
+	<form class="layui-form" lay-filter="dialog" style="padding: 15px 30px 0 15px;" method="POST">
+        {{# if (d.name == 'mobile') { }}
+		<div class="layui-form-item">
+			<label class="layui-form-label">{{d.title}}：</label>
+			<div class="layui-input-block">
+                <input type="hidden" name="name" value="{{d.name}}" />
+                <input type="number" class="layui-input" name="value" value="{{d.value}}" onfocus="this.select();" />
+			</div>
+		</div>
+        {{# } else { }}
+		<div class="layui-form-item">
+			<label class="layui-form-label">{{d.title}}：</label>
+			<div class="layui-input-block">
+                <input type="hidden" name="name" value="{{d.name}}" />
+                <input type="text" class="layui-input" name="value" value="{{d.value}}" onfocus="this.select();" />
+			</div>
+		</div>
+        {{# } }}
+	</form>
+</script>
+<!-- 设置标签 -->
+<script type="text/html" id="user-label">
+    <style>
+        .layui-label-list .layui-btn {
+            margin: 6px 2.5px;
+        }
+    </style>
+	<form class="layui-form" lay-filter="user-label" style="height: 100%;" action="POST">
+		<div class="layui-label-list" style="padding: 15px; height: calc(100% - 30px); overflow: auto;">
+            <div style="padding: 0 5px;">
+            {{# d.list.forEach(function(v) { }}
+                {{# if (v.selected) { }}
+                <span class="layui-btn layui-btn-xs layui-btn-success" data-selected="1" data-id="{{=v.id}}" lay-on="label">{{=v.labelname}}</span>
+                {{# } else { }}
+                <span class="layui-btn layui-btn-xs layui-btn-primary" data-selected="0" data-id="{{=v.id}}" lay-on="label">{{=v.labelname}}</span>
+                {{# } }}
+            {{# }) }}
+            </div>
+            <input type="hidden" name="id" value="{{d.id}}" />
+            <input type="hidden" name="label_ids" id="ids" value="{{d.ids}}" />
+        </div>
+    </form>
+</script>
+<!-- 调整余额 -->
+<script type="text/html" id="user-balance">
+	<form class="layui-form" lay-filter="user-balance" style="padding: 15px 30px 0 0;" method="POST">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前余额：</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input len-long layui-disabled" maxlength="18" value="{{=d.value}}" disabled />
+			</div>
+		</div>
+
+        <div class="layui-form-item">
+			<label class="layui-form-label must">充值金额：</label>
+			<div class="layui-input-inline">
+				<input type="number" name="amount" id="amount" lay-verify="required" class="layui-input len-mid" maxlength="6" placeholder="0" />
+			</div>
+		</div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注说明：</label>
+            <div class="layui-input-block">
+                <textarea 
+                    class="layui-textarea" 
+                    name="remark" 
+                    placeholder="" 
+                    style="min-height: 80px"
+                ></textarea>
+            </div>
+        </div>
+	</form>
+</script>
+
+<script>
+    const info = {$item|json_encode|raw}, route = {
+        lists: '{:url("memberList")}',
+        labels: "{:url('memberLabel')}",
+        recharge: "{:url('memberRecharge')}",
+        label: "{:url('memberModifyLabel')}",
+        district: '/api/area/list'
+    },
+    funs = {
+        l: null,
+        n: null,
+        listen(name, value) {
+            var t = this;
+            t.n !== null && (clearTimeout(t.n), t.n = null),
+            t.n = setTimeout(() => {
+                t.update(name, value),
+                t.n = null
+            }, 2000)
+        },
+        update(name, value) {
+            ns.silent(location.href, {name: name, value: value})
+        },
+        modify(obj) {
+            typeof(funs[obj.name]) != 'undefined' ? funs[obj.name].call(this, obj) : funs.dialog.call(this, obj)
+        },
+        changeAvatar() {
+            var value = $('input[name="avatar"]').val();
+            this.update('avatar', value)
+        },
+        dialog(obj) {
+            var template = document.getElementById('dialog').innerHTML,
+            flag = false, othis = $(this);
+            layui.laytpl(template).render(obj, function(html) {
+                top.layer.open({
+                    type: 1,
+                    area: ['500px', '360px'],
+                    title: '修改' + obj.title,
+                    btn: ['保存', '返回'],
+                    content: html,
+                    success(obj, index) {
+                        top.layui.form.on('submit(dialog)', function(obj) {
+                            if (flag) return false;
+                            top.layer.close(index),
+                            flag = true,
+                            obj.field = top.layui.form.val("dialog");
+                            ns.silent(location.href, obj.field, res => {
+                                flag = false;
+                                if (res.code != 0) {
+                                    layer.alert(res.message)
+                                } else {
+                                    othis.prev().text(obj.field.value)
+                                }
+                            });
+                            return false;
+                        })
+                    },
+                    yes(index, obj, that) {
+                        obj.find('form').submit();
+                    }
+                })
+            });
+        },
+        getLabels() {
+            return new Promise((resolve, reject) => {
+                if (this.l == null) {
+                    $.getJSON(route.labels, {page: 1, limit: 9999}, r => {
+                        if (r.code == 0) {
+                            this.l = r.data.list;
+                            resolve(this.l);
+                        } else {
+                            reject(r.message);
+                        }
+                    })
+                } else {
+                    resolve(this.l);
+                }
+            })
+        },
+        balance_money(data) {
+            var template = document.getElementById('user-balance').innerHTML, flag = false;
+            laytpl(template).render(data, function(html) {
+                top.layer.open({
+                    type: 1,
+                    area: ['500px', '330px'],
+                    title: '账户充值',
+                    btn: ['保存', '返回'],
+                    content: html,
+                    success(obj, index) {
+                        top.layui.form.on('submit(user-balance)', function(obj) {
+                            obj.field = top.layui.form.val("user-balance");
+                            obj.field.amount = parseFloat(obj.field.amount);
+                            obj.field.id = info.member_id;
+                            if (isNaN(obj.field.amount)) {
+                                layer.msg("填写金额不正确!", {icon: 0, shade: .3, time: 800});
+                                return false;
+                            }
+
+                            if (flag) return false;
+
+                            top.layer.close(index),
+                            flag = true,
+                            ns.silent(route.recharge, obj.field, res => {
+                                if (res.code == 0) {
+                                    flag = false,
+                                    setTimeout(() => location.reload(), 100)
+                                } else {
+                                    flag = false,
+                                    layer.alert(res.message)
+                                }
+                            });
+
+                            return false;
+                        }),
+                        top.layui.form.render(null, 'user-pwd')
+                    },
+                    yes(index, obj, that) {
+                        obj.find('form').submit();
+                    }
+                })
+            })
+        },
+        label(e) {
+            e.label_list = Object.values(info.label_list),
+            funs.getLabels().then(res => {
+                var template = document.getElementById('user-label').innerHTML, flag = false;
+                layui.laytpl(template).render({ list: res.map(function(v) {
+                        v.selected = false,
+                        e.label_list.forEach(l => {
+                            if (l.id == v.id) {
+                                v.selected = true;
+                                return v;
+                            }
+                        });
+                        return v;
+                    }), id: info.member_id }, function(html) {
+                    top.layer.open({
+                        type: 1,
+                        area: ['680px', '510px'],
+                        title: '会员标签',
+                        btn: ['保存', '返回'],
+                        content: html,
+                        success(obj, index) {
+                            top.layui.util.on('lay-on', {
+                                label: function(o) {
+                                    let id = o.data('id');
+                                    if (o.data('selected') == '1') {
+                                        o.data('selected', '0'),
+                                        o.addClass('layui-btn-primary'),
+                                        e.label_list = e.label_list.filter(v => {
+                                            if (v.id == id) {
+                                                return false;
+                                            }
+                                            return true;
+                                        })
+                                    } else {
+                                        o.data('selected', '1'),
+                                        o.removeClass('layui-btn-primary'),
+                                        e.label_list.push({ id: o.data('id'), labelname: o.text() })
+                                    }
+                                    obj.find('#ids').val(e.label_list.map(v => v.id ))
+                                }
+                            }),
+                            top.layui.form.on('submit(user-label)', function(obj) {
+                                obj.field = top.layui.form.val("user-label");
+                                top.layer.close(index),
+                                flag = true,
+                                ns.silent(route.label, obj.field, res => {
+                                    if (res.code == 0) {
+                                        flag = false,
+                                        setTimeout(() => location.reload(), 100)
+                                    } else {
+                                        flag = false,
+                                        layer.alert(res.message)
+                                    }
+                                });
+                                return false;
+                            }),
+                            top.layui.form.render(null, 'user-label')
+                        },
+                        yes(index, obj, that) {
+                            obj.find('form').submit();
+                        }
+                    })
+                })
+            })
+        }
+    };
+
+    layui.use(['form', 'laytpl', 'layCascader'], function(){
+        var $ = layui.$
+        ,form = layui.form
+        , cascader = layui.layCascader
+        , laytpl = layui.laytpl
+        , selected_value = null
+        , selected_options = []
+        , selected = false
+        , address;
+
+        address = cascader({
+            elem: '#cascader',
+            extendClass: 'layui-cascader',
+            clearable: true,
+            placeholder: info.full_address,
+            disabled: selected,
+            props: {
+                lazy: true,
+                lazyLoad: function(node, resolve) {
+                    var level = node.level, param = {};
+                    if (!node.root)param['pid'] = node.data.value;
+                    $.getJSON(route.district, param, function(r) {
+                        if (r.code === 0) {
+                            resolve(r.data.list.map(function(v) {
+                                return {
+                                    value: v.id,
+                                    label: v.areaname,
+                                    lng: v.lng,
+                                    lat: v.lat,
+                                    leaf: level >= 2
+                                }
+                            }));
+                        }
+                    })
+                }
+            }
+        }),
+
+        address.changeEvent(function(value, node) {
+            $('#province_id').val(node.parentNode.parentNode.parentNode.data.value),
+            $('#city_id').val(node.parentNode.parentNode.data.value),
+            $('#district_id').val(node.parentNode.data.value),
+            $('#street_id').val(node.data.value),
+            $('#longitude').val(node.data.lng),
+            $('#latitude').val(node.data.lat),
+            $('#address').val(node.data.label),
+            $('#full_address').val(node.parentNode.parentNode.parentNode.data.label + node.parentNode.parentNode.data.label + node.parentNode.data.label + node.data.label)
+        }),
+
+        form.on('switch(is_virtual)', function(obj) {
+            funs.update('is_virtual', obj.elem.checked ? 1 : 0)
+        }),
+
+        form.on('select(level_id)', function(obj) {
+            funs.update('level_id', obj.value)
+        }),
+
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                location.replace(route.lists);
+            });
+            return false;
+        });
+
+        $('textarea[name="remark"]').on('input propertychange', function() {
+            funs.listen('remark', this.value)
+        }),
+        $('.movable[data-name]').find('.value').after('<i class="layui-icon layui-icon-edit"></i>');
+        $('.movable[data-name]').find('.layui-icon').on('click', function() {
+            var othis = $(this), parent = othis.parent().parent(),
+            title = othis.parent().prev().text().replace('：', ''),
+            value = othis.prev().text();
+            funs.modify.call(this, {
+                name: parent.data('name'),
+                title: title,
+                value: value
+            })
+        })
+    });
+</script>
+{/block}

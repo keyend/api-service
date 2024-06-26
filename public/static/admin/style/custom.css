@@ -1,5 +1,9 @@
+html,body {
+  height: 100%;
+}
 .layui-layout-body {
   overflow: auto;
+  min-height: 100%;
 }
 .layui-layout-body > .layui-body {
   left: 0px;
@@ -96,6 +100,13 @@
 }
 .layui-body .layui-content {
   padding: 15px;
+  height: calc(100% - 30px);
+}
+.layui-body .layui-content .layui-card.layui-card-full {
+  height: 100%;
+}
+.layui-body .layui-content .layui-card.layui-card-full .layui-card-body {
+  height: 100%;
 }
 .layadmin-side-shrink .layui-side-menu .layui-nav-item cite, 
 .layadmin-side-shrink .layui-side-menu .layui-nav>.layui-nav-item>.layui-nav-child, 
@@ -241,6 +252,12 @@
 .layui-form-label {
   padding: 6.5px 14px;
 }
+.layui-form-label.must::after {
+  content: "*";
+  color: red;
+  position: absolute;
+  right: 10px;
+}
 .layui-input-block {
   min-height: 32px;
 }
@@ -249,18 +266,14 @@
   line-height: 32px;
 }
 
-.layui-table-view {
-  border: none !important;
-}
-
-.layui-table {
-  min-width: 100%!important;
-}
 .layui-table-body {
-  overflow-y: scroll!important;
+  /* overflow-y: scroll!important; */
 }
 .layui-table-header th:last-child {
   padding-right: 7px!important;
+}
+.layui-table-fixed.layui-table-fixed-r {
+  right: -1px!important;
 }
 
 .layui-table-click,.layui-table-hover,.layui-table[lay-even] tbody tr:nth-child(even) {
@@ -302,12 +315,12 @@
 }
 
 .layui-table-view {
-	border: none !important;
+	border-color: transparent!important;
 }
 
 .layui-table-cell {
-	height: 34px !important;
-	line-height: 34px !important;
+	height: 34px;
+	line-height: 34px;
 }
 
 .layui-table .layui-laypage .layui-laypage-curr .layui-laypage-em {
@@ -320,8 +333,8 @@
 }
 
 .layui-table tr {
-	height: 34px !important;
-	line-height: 34px !important;
+	height: 34px;
+	line-height: 34px;
 }
 
 .layui-table-cell {
@@ -329,7 +342,7 @@
 }
 
 .layui-table-box * {
-	font-size: 13px !important;
+	font-size: 13px;
 }
 
 .layui-table-page .layui-laypage input {
@@ -391,9 +404,38 @@
   background-color: #e61e38;
 }
 
+.layui-btn-list {
+  font-size: 0%;
+}
+.layui-btn-list .layui-btn {
+  margin: 0px 0.6px;
+  display: inline-block;
+  vertical-align: middle;
+  background-color: transparent;
+  color: #16baaa;
+}
+.layui-btn-list .layui-btn.layui-btn-danger {
+  color: #e61e38;
+}
+.layui-layer-title {
+  border-bottom: unset;
+  font-size: 1rem;
+  color: #000;
+}
+.layui-layer-content {
+  width: 100%;
+  overflow: hidden;
+}
+.layui-layer-prompt .layui-layer-input {
+  margin: unset;
+}
+
 @media screen and (min-width:768px) {
   .layui-header .layui-layout-right {
     padding-right: .6rem;
+  }
+  .layui-input-block.len-long {
+    width: 460px;
   }
 }
 
@@ -403,6 +445,9 @@
   }
   .layui-col-md625 {
     width: 62.5%;
+  }
+  .layui-input-block.len-long {
+    width: 570px;
   }
 }
 @media screen and (max-width: 992px) {
@@ -437,4 +482,101 @@
     transform: translate3d(100px,0,0);
     -webkit-transform: translate3d(100px,0,0)
   }
+  .layui-side.second-nav {
+    position: unset;
+    width: unset;
+    overflow-x: unset;
+  }
+  .layui-side.second-nav .layui-side-scroll,
+  .layui-side.second-nav .layui-side-scroll ul.layui-nav {
+    width: unset;
+    overflow-x: unset;
+  }
+  .layui-side.second-nav .layui-side-scroll ul.layui-nav {
+    padding: 0 1rem;
+    margin-bottom: 2.4rem;
+  }
+  .layui-side.second-nav .layui-nav-item {
+    display: inline-block;
+  }
+  .layui-side.second-nav .layui-side-scroll ul.layui-nav > .layui-nav-item {
+    width: 96px;
+    position: unset;
+  }
+  .layui-side.second-nav .layui-side-scroll ul.layui-nav .layui-nav-child {
+    position: absolute;
+    top: 42px;
+    left: 0;
+    right: 0;
+    padding: 0 1rem;
+    z-index: 9;
+    min-width: unset;
+    border-radius: unset;
+    height: 42px;
+    background-color: #e7e7e7 !important;
+  }
+  .layui-side.second-nav .layui-side-scroll ul.layui-nav .layui-nav-child dd {
+    width: 96px;
+    text-align: center;
+    display: inline-block;
+  }
+  .layui-side.second-nav .layui-side-scroll ul.layui-nav .layui-nav-child dd.layui-this span {
+    padding-left: 0px;
+    color: #16b777;
+    background-color: unset!important;
+    border-bottom: 1px solid #16b777;
+  }
+  .layui-side.second-nav .layui-nav-item a {
+    width: 96px;
+    padding: 3px 0px;
+  }
+  .layui-side.second-nav + .layui-body {
+    left: unset;
+    position: unset;
+  }
+}
+
+.mt {
+  margin-top: .6rem;
+}
+.text-button {
+  color: #007fe7;
+}
+.text-left {
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+.layui-content .layui-card-header {
+  padding: 20px 30px;
+  padding-bottom: 0px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.layui-content .layui-card-header .card-title {
+  font-size: 14px;
+  font-weight: 600;
+  position: relative;
+  padding-left: 10px;
+}
+.layui-content .layui-card-header .card-title::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  background-color: #16b777;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  border-radius: 5px;
+  transform: translateY(-50%);
+}
+.layui-content .layui-form-mid {
+  padding: 6px 0 !important;
+  font-size: 13px;
 }

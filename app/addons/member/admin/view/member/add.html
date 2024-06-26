@@ -1,0 +1,196 @@
+{extend name="$base" /}
+{block name="resources"}
+<style>
+    .layui-card {
+        height: 100%;
+    }
+    .layui-form-label.must::after {
+        content: "*";
+        color: red;
+        position: absolute;
+        right: 10px;
+    }
+    .layui-form-item {
+        font-size: 0px;
+        margin-bottom: 10px;
+    }
+    .layui-form-item .layui-form-label,
+    .layui-form-item .layui-input-block {
+        font-size: 14px;
+    }
+    .image-uploader .inner {
+        width: 5rem;
+        height: 5rem;
+        margin: 0 auto;
+    }
+    .image-uploader .item {
+        width: 5rem;
+        height: 5rem;
+        border-radius: 50%;
+        line-height: 4.5rem;
+        overflow: hidden;
+    }
+    .image-uploader .item .layui-icon.layui-icon-upload {
+        font-size: 36px;
+        color: #bbb;
+    }
+    .layui-form-group .layui-inline {
+        width: 49.9999%;
+        margin-right: 0px;
+    }
+    .layui-input:read-only,
+    .layui-textarea:read-only {
+        background-color: #f7f7f7;
+        color: #ccc;
+    }
+    .btn.btn-link {
+        color: #0080f7;
+    }
+</style>
+{/block}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element" style="padding-right: 1rem;">
+            <div class="layui-row" id="form-container">
+                <div class="layui-col-xs2">
+                    <div class="image-uploader" data-limit="1">
+                        <input type="hidden" name="avatar" value="{$item['avatar'] ?? ''}" />
+                        <div class="inner"></div>
+                    </div>
+                    <div class="text-center mt">
+                        <input
+                            type="checkbox" 
+                            id="is_virtual"
+                            name="is_virtual" 
+                            lay-skin="switch" 
+                            lay-text="虚拟会员|普通会员" 
+                            value="1"
+                            checked
+                        />
+                    </div>
+                    <div class="text-center mt">
+                        <a href="javascript: location.reload();" class="btn btn-link">
+                            <i class="fa fa-refresh"></i>
+                            刷新
+                        </a>
+                    </div>
+                </div>
+                <div class="layui-col-xs10 layui-form-group">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label must">用户名：</label>
+                            <div class="layui-input-block">
+                                <input
+                                    type="text" 
+                                    name="username" 
+                                    placeholder="{$default.username}" 
+                                    autocomplete="off" 
+                                    class="layui-input" 
+                                    value="{$item.username}"
+                                />
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">会员呢称：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="nickname" placeholder="{$default.nickname}" autocomplete="off" class="layui-input" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">真实姓名：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="realname" autocomplete="off" class="layui-input" placeholder="{$default.realname}" />
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label must">联系手机：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="mobile" placeholder="{$default.mobile}" autocomplete="off" class="layui-input" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">登录密码：</label>
+                            <div class="layui-input-block">
+                                <input
+                                    type="password" 
+                                    name="password" 
+                                    autocomplete="off" 
+                                    class="layui-input"
+                                    {if !isset($item['member_id'])}
+                                    placeholder="123456"
+                                    {/if}
+                                />
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">上级推荐：</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="parent_id" placeholder="推荐人ID" autocomplete="off" class="layui-input" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">备注说明：</label>
+                        <div class="layui-input-block">
+                            <textarea 
+                                class="layui-textarea" 
+                                name="remark" 
+                                placeholder="" 
+                                style="height: 80px"
+                            >{$item.remark ?? ''}</textarea>
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{include file="../../../../view/Common/uploadImage" /}
+{/block}
+{block name="script"}
+<script>
+    var defaultValues = {$default|json_encode|raw}, nept = {};
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form
+        ,inps = $('input[name="username"],input[name="nickname"],input[name="realname"],input[name="mobile"]')
+        ,data = {};
+        inps.on('input propertychange', function() {
+            if (this.value.length > 0) {
+                if (typeof(nept[this.name]) == 'undefined') {
+                    nept[this.name] = this.value.length
+                }
+            } else if(this.value == '') {
+                delete nept[this.name]
+            }
+            $('input[name="username"],input[name="mobile"]').attr('lay-verify', Object.keys(nept).length > 0 ? 'required' : ''),
+            $('#is_virtual').prop('checked', Object.keys(nept).length <= 0),
+            form.render()
+        }),
+        form.on('submit(component-form-element)', function(obj) {
+            data = obj.field,
+            Object.keys(data).forEach(k => {
+                if (data[k] == '' && k != 'is_virtual') {
+                    if (defaultValues[k])
+                        data[k] = defaultValues[k]
+                }
+            }),
+            ns.wost(location.href, data, res => {
+                ns.close(res)
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

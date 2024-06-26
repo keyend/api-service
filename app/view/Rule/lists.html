@@ -31,7 +31,6 @@
             <div class="layui-form-item" style="margin-bottom: 0px;">
                 <div class="layui-inline btn-group">
                     <button class="layui-btn layui-btn-sm" lay-event="add">
-                        <i class="layui-icon">&#xe654;</i>
                         添加权限
                     </button>
                 </div>
@@ -41,18 +40,18 @@
     </div>
 </div>
 {/block}
-{block name="scripts"}
+{block name="script"}
 <!-- 操作 -->
 <script type="text/html" id="actionTpl">
-    <div class="layui-btn-group" data-values="{{=JSON.stringify(d)}}">
+    <div class="layui-btn-list" data-values="{{=JSON.stringify(d)}}">
         {if checkAccess('sysRuleAdd')}
-        <a class="layui-btn layui-btn-xs" lay-event="add"><i class="layui-icon layui-icon-add-1"></i>添加</a>
+        <a class="layui-btn layui-btn-xs" lay-event="add">添加</a>
         {/if}
         {if checkAccess('sysRuleEdit')}
-        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="layui-icon layui-icon-edit"></i>编辑</a>
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">编辑</a>
         {/if}
         {if checkAccess('sysRuleDel')}
-        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon layui-icon-delete"></i>删除</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
         {/if}
     </div>
 </script>
@@ -176,12 +175,12 @@
                 }]
             ],
             add(o){
-                ns.open("{:url('sysRuleAdd')}?id=" + o.data.id, '添加权限', [ '660px', '450px' ]).then(() => {
+                ns.open("{:url('sysRuleAdd')}?id=" + o.data.id, '添加权限', [ '660px', '460px' ]).then(() => {
                     active.render()
                 })
             },
             edit(o) {
-                ns.open("{:url('sysRuleEdit')}?id=" + o.data.id, '编辑权限', [ '660px', '450px' ]).then(() => {
+                ns.open("{:url('sysRuleEdit')}?id=" + o.data.id, '编辑权限', [ '660px', '460px' ]).then(() => {
                     active.render()
                 })
             },
@@ -205,6 +204,7 @@
                 table.render({
                     elem: "#LAY-list-table",
                     toolbar: '#table-toolbar',
+                    skin: 'line',
                     url: location.href,
                     cols: active.cols
                 })

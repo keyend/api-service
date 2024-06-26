@@ -1,0 +1,111 @@
+{extend name="$base" /}
+{block name="resources"}
+<style>
+    .layui-form-item.combo-ratio-item {
+        display: none;
+    }
+    .combo-ratio-item.active {
+        display: block;
+    }
+</style>
+{/block}
+{block name="main"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            <div class="layui-row layui-col-space10 layui-form-item">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">套餐名：</label>
+                    <div class="layui-input-block len-long">
+                        <input type="text" name="combo" maxlength="32" autocomplete="off" class="layui-input" value="{$item.combo ?? ''}" />
+                    </div>
+                </div>
+                <div class="layui-form-item" style="margin-bottom: 0px;">
+                    <label class="layui-form-label">计费方式：</label>
+                    <div class="layui-input-block">
+                        <div class="layui-col-lg2 col-col-md4 layui-col-xs8">
+                            <select name="bill_method" lay-filter="method">
+                                {foreach $bill_method_list as $v}
+                                <option value="{$v.name}" {if isset($item.bill_method) && $item.bill_method == $v.name} selected{/if}>{$v.title}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                        <div class="layui-col-md6 layui-col-xs12 combo-ratio-list">
+                            <div data-role="method" data-toggle="times" class="layui-form-item combo-ratio-item{if !isset($item.bill_method) || (isset($item.bill_method) && $item.bill_method == 'times')} active{/if}">
+                                <label class="layui-form-label">套餐次数：</label>
+                                <div class="layui-input-inline layui-input-wrap">
+                                    <input type="number" name="times" maxlength="11" autocomplete="off" class="layui-input" value="{$item.times ?? ''}" placeholder="0" />
+                                    <div class="layui-input-affix layui-input-suffix" style="line-height: 32px;">次</div>
+                                </div>
+                            </div>
+                            <div data-role="method" data-toggle="day" class="layui-form-item combo-ratio-item{if isset($item.bill_method) && $item.bill_method == 'day'} active{/if}">
+                                <label class="layui-form-label">套餐天数：</label>
+                                <div class="layui-input-inline layui-input-wrap">
+                                    <input type="number" name="days" maxlength="11" autocomplete="off" class="layui-input" value="{$item.days ?? ''}" placeholder="0" />
+                                    <div class="layui-input-affix layui-input-suffix" style="line-height: 32px;">天</div>
+                                </div>
+                            </div>
+                            <div data-role="method" data-toggle="month" class="layui-form-item combo-ratio-item{if isset($item.bill_method) && $item.bill_method == 'month'} active{/if}">
+                                <label class="layui-form-label">套餐月数：</label>
+                                <div class="layui-input-inline layui-input-wrap">
+                                    <input type="number" name="months" maxlength="11" autocomplete="off" class="layui-input" value="{$item.months ?? ''}" placeholder="0" />
+                                    <div class="layui-input-affix layui-input-suffix" style="line-height: 32px;">月</div>
+                                </div>
+                            </div>
+                            <div data-role="method" data-toggle="year" class="layui-form-item combo-ratio-item{if isset($item.bill_method) && $item.bill_method == 'year'} active{/if}">
+                                <label class="layui-form-label">套餐年数：</label>
+                                <div class="layui-input-inline layui-input-wrap">
+                                    <input type="number" name="years" maxlength="11" autocomplete="off" class="layui-input" value="{$item.years ?? ''}" placeholder="0" />
+                                    <div class="layui-input-affix layui-input-suffix" style="line-height: 32px;">年</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">套餐费用：</label>
+                    <div class="layui-input-inline layui-input-wrap">
+                        <input type="number" name="combo_money" maxlength="32" autocomplete="off" class="layui-input" value="{$item.combo_money ?? ''}" />
+                        <div class="layui-input-affix layui-input-suffix" style="line-height: 32px;">元</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">套餐备注：</label>
+                    <div class="layui-input-block len-long">
+                        <textarea 
+                            class="layui-textarea" 
+                            name="remark" 
+                            placeholder="" 
+                            style="height: 80px"
+                        >{$item.remark ?? ''}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary" onclick="history.go(-1);">返回</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form;
+        form.on('select(method)', function(obj) {
+            $('div[data-role="method"]').removeClass('active'),
+            $('div[data-toggle="' + obj.value + '"]').addClass('active')
+        }),
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                history.go(-1);
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

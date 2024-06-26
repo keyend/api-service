@@ -78,6 +78,23 @@ class Config extends Model
     }
 
     /**
+     * 返回插件列表
+     *
+     * @return void
+     */
+    public function getAddons()
+    {
+        $addons = Cache::get("system_addons") ?? [];
+        if (empty($addons)) {
+            foreach(glob(app()->getRootPath() ."app/addons/*", GLOB_ONLYDIR) as $path) {
+                $addons[] = basename($path);
+            }
+            Cache::tag("config")->set("system_addons", $addons);
+        }
+        return $addons;
+    }
+
+    /**
      * 设置参数
      *
      * @param [type] $name

@@ -1,4 +1,20 @@
 {extend name="base" /}
+{block name="resources"}
+<style>
+    .layui-card-body > .layui-form {
+        padding-right: 1.2rem;
+    }
+    .layui-layout-body > .layui-card {
+        height: 100%;
+    }
+    .layui-form-label.must::after {
+        content: "*";
+        color: red;
+        position: absolute;
+        right: 10px;
+    }
+</style>
+{/block}
 {block name="body"}
 <div class="layui-card">
     <div class="layui-card-body">
@@ -51,7 +67,7 @@
     </div>
 </div>
 {/block}
-{block name="scripts"}
+{block name="script"}
 <script>
     layui.use(['form'], function(){
         var $ = layui.$

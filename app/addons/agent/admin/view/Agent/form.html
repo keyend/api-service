@@ -1,0 +1,63 @@
+{extend name="$base" /}
+{block name="resources"}
+    <style>
+        .required { color: red; }
+        .list-conditions {padding: 12px; border: 1px dashed rgb(253, 200, 200);}
+    </style>
+{/block}
+{block name="main"}
+<form class="layui-card layui-form" action="" lay-filter="component-form-element">
+    <div class="layui-card-header">
+        <span class="card-title">基础信息</span>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="required">*</span>关联会员：</label>
+            <div class="layui-input-inline layui-input-wrap">
+                <input type="hidden" name="member_id" value="{$item.member_id ?? 0}" />
+                <input type="text" name="agent" placeholder="{$item.agent ?? ''}" lay-verify="required" autocomplete="off" class="layui-input" readonly />
+            </div>
+            <div class="layui-form-mid layui-text-em">
+                关联的会员
+                <a
+                    href="javascript:void(0);" 
+                    class="ns-member-select" 
+                    data-mapper='{"username": "input[name=\"agent\"]", "member_id": "input[name=\"member_id\"]"}'
+                    data-id="{$item.member_id ?? 0}"
+                ><strong class="text-button">选择会员</strong></a>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="required">*</span>代理等级：</label>
+            <div class="layui-input-inline layui-input-wrap">
+                <select name="level_id" lay-verify="required">
+                    <option value="">选择等级</option>
+                    {foreach $level_list as $v}
+                    <option value="{$v.level}" {if $v.level == $item.level_id} selected="selected"{/if}>{$v.levelname}</option>
+                    {/foreach}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </div>
+</form>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form;
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                history.go(-1);
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

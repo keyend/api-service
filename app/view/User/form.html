@@ -1,12 +1,6 @@
 {extend name="base" /}
 {block name="resources"}
     <style>
-        .layui-form-label.must::after {
-            content: "*";
-            color: red;
-            position: absolute;
-            right: 10px;
-        }
         .layui-form-item {
             font-size: 0px;
             margin-bottom: 10px;
@@ -45,7 +39,7 @@
 {block name="body"}
 <div class="layui-card">
     <div class="layui-card-body">
-        <form class="layui-form" action="" lay-filter="component-form-element">
+        <form class="layui-form" action="" lay-filter="component-form-element" style="padding-right: 1.6rem;">
             <div class="layui-row">
                 <div class="layui-col-xs2">
                     <div class="image-uploader" data-limit="1">
@@ -73,7 +67,7 @@
                             </div>
                         </div>
                         <div class="layui-inline">
-                            <label class="layui-form-label must">会员呢称：</label>
+                            <label class="layui-form-label must">用户呢称：</label>
                             <div class="layui-input-block">
                                 <input type="text" name="nickname" lay-verify="required" placeholder="" autocomplete="off" class="layui-input" value="{$item.nickname}" />
                             </div>
@@ -152,7 +146,7 @@
 </div>
 {include file="Common/uploadImage" /}
 {/block}
-{block name="scripts"}
+{block name="script"}
 <script>
     layui.use(['form'], function(){
         var $ = layui.$

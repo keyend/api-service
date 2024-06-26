@@ -181,7 +181,7 @@
     </div>
 </div>
 {/block}
-{block name="scripts"}
+{block name="script"}
 <!-- 分组编辑 -->
 <script type="text/html" id="albumOperator">
     {{# if(mode == 0) { }}
@@ -659,13 +659,14 @@
      */
     var flag_add_group = false;
     function addGroup() {
-        var laryer_add = layer.prompt({
+        var laryer_add = top.layer.prompt({
             formType: 3,
             title: '添加分组',
             area: ["350px"],
             shade: 0,
             offset: '150px'
         }, function(value) {
+            top.layer.close(laryer_add);
             if (flag_add_group) return;
             flag_add_group = true;
             $.ajax({

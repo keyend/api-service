@@ -34,6 +34,28 @@ if (!function_exists('array_column_bind')) {
     }
 }
 
+if (!function_exists('has_children_nodes')) {
+    /**
+     * 校验是否存在子菜单
+     *
+     * @param array $children
+     * @param array $types
+     * @return boolean
+     */
+    function has_children_menus($children = [], $types = [1])
+    {
+        if (!empty($children)) {
+            foreach($children as $node) {
+                if (in_array($node['type'], $types)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+}
+
 if (!function_exists('extractTree')) {
     /**
      * 分解树形数组
@@ -62,20 +84,31 @@ if (!function_exists('extractTree')) {
     }
 }
 
-if (!function_exists('conf')) {
+if (!function_exists('gc')) {
     /**
      * 返回缓存配置
      *
      * @param string $name
      * @param string $default
      * @return void
+     * gc("valid.backend", 0)
+     * gc("shoper.is_seller", 1, "order")
      */
-    function conf($name, $default = '', $prefix = "config") {
-        $value = redis()->get("{$prefix}.{$name}");
-        if (!$value) {
-            $value = $default;
+    function gc($name, $default = '', $prefix = "config") {
+        $names = explode(',', $name);
+        $length = count($names);
+        $result = [];
+        foreach($names as $name) {
+            [$name, $option_name] = explode(".", $name);
+            $name = strtoupper(implode("_", [$prefix, $name]));
+            $res = (new \app\model\system\Config())->getConfig($name);
+            $res = $default === '' ? $res['value'] : $res['value'][$option_name] ?? $default;
+            if ($length===1 && !empty($option_name)) {
+                return $res;
+            }
+            $result = array_merge($result, $res);
         }
-        return $value;
+        return $result;
     }
 }
 
@@ -347,6 +380,18 @@ if (!function_exists('rand_string')) {
     }
 }
 
+if (!function_exists('make_trade_no')) {
+    /**
+     * 创建一个流水号
+     *
+     * @param string $prefix
+     * @return void
+     */
+    function make_trade_no($prefix = '') {
+        return $prefix . date('YmdHis') . rand_string(5, 1);
+    }
+}
+
 if (!function_exists('redis')) {
     /**
      * 应用Redis存储
@@ -354,6 +399,37 @@ if (!function_exists('redis')) {
      */
     function redis() {
         return \think\facade\Cache::store('redis');
+    }
+}
+
+if (!function_exists('range_date')) {
+    /**
+     * 获取时间范围
+     *
+     * @param string $value
+     * @param [type] $callable
+     * @return void
+     */
+    function range_date($value = '', $callable = null) {
+        $values = explode(' - ', $value);
+        if (count($values) !== 2) {
+            return [0,0];
+        }
+        if (!empty($values[0])) {
+            $values[0] = strtotime($values[0] . " 00:00:00");
+        } else {
+            $values[0] = 0;
+        }
+        if (!empty($values[1])) {
+            $values[1] = strtotime($values[1] . " 23:59:59");
+        } else {
+            $values[1] = 0;
+        }
+        if (is_callable($callable) || $callable instanceof \Closure) {
+            return $callable($values);
+        }
+
+        return $values;
     }
 }
 

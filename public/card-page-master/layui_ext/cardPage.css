@@ -1,0 +1,33 @@
+.cardPage-page {
+    position: relative;
+    padding: 0px 30px;
+}
+
+.row-hight {
+    padding: 7.5px;
+}
+
+.layui-bg-gray {
+    background-color: rgb(250, 250, 250) !important;
+    color: rgb(102, 102, 102) !important;
+}
+
+.card-single {
+    padding: 0px 10px;
+}
+
+.card-single-right {
+    padding-left: 10px
+}
+
+.card-single-title {
+    cursor: pointer;
+}
+
+.card-btn-container {
+    font-size: 0;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 1%;
+}

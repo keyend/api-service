@@ -18,7 +18,8 @@ class InitAddon
     private function middleware($module) 
     {
         $middlewares = [
-            'admin' => [ \app\middleware\Authorization::class ]
+            'admin' => [ \app\middleware\Authorization::class ],
+            'api' => [ \app\middleware\Api::class ]
         ];
         return $middlewares[$module] ?? [];
     }

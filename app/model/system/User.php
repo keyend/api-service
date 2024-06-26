@@ -129,8 +129,18 @@ class User extends Model
         $user->token = rand_string();
         $user->save();
 
+        return $user->getUserData();
+    }
+
+    /**
+     * 返回存储数据
+     *
+     * @return void
+     */
+    public function getUserData()
+    {
         // 保存用户登录信息
-        $data = array_keys_filter($user->toArray(), [
+        $data = array_keys_filter($this->getData(), [
             'user_id',
             'username',
             'group_id',
@@ -142,11 +152,9 @@ class User extends Model
             'avatar'
         ]);
         // 用户组
-        $data['group'] = $user->group->group;
-        // 组所属成员
-        $data['group_range'] = $user->group->group_range;
+        $data['group_range'] = $this->group->group_range;
         // 父级用户ID
-        $data['parent_id'] = $user->parent_id === 0 ? $user->user_id : $user->parent_id;
+        $data['parent_id'] = $this->parent_id === 0 ? $this->user_id : $this->parent_id;
         // 权限列表
         $data['access'] = array_values(array_column($this->getAccess(), 'rule_id'));
         // 默认语言

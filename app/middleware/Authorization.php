@@ -77,7 +77,7 @@ class Authorization extends BaseMiddleware
                 define('S1', $request->user['user_id']);
                 define('S2', $request->user['username']);
                 define('S3', $request->user['parent_id']);
-                define('S4', $request->user['group']);
+                define('S4', $request->user['group_id']);
                 define('S5', $request->user['group_range']);
 
                 if ($isCheck) {

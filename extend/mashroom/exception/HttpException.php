@@ -7,8 +7,8 @@ namespace mashroom\exception;
 
 class HttpException extends \think\exception\HttpException
 {
-    public function __construct(string $message = '', $code = 50001, $httpCode = 200)
+    public function __construct(string $message = '', $code = 50001, $headers = [], $httpCode = 200)
     {
-        parent::__construct($httpCode, $message, null, [], $code);
+        parent::__construct($httpCode, $message, null, $headers, $code);
     }
 }

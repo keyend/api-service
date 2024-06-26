@@ -1,4 +1,169 @@
 {extend name="$base" /}
+{block name="resources"}
+    <style>
+        .userinfo {
+            padding: 4px 0;
+            display: flex;
+        }
+        .userinfo .avatar {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            margin-right: 5px;
+        }
+        .userinfo .avatar .image {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .userinfo .avatar .image img{
+            min-height: 100%;
+            min-width: 100%;
+            max-width: 140%;
+            max-height: 140%;
+            object-fit: contain;
+        }
+        .userinfo .avatar .type {
+            position: absolute;
+            right: -5px;
+            bottom: 0px;
+            width: 16px;
+            height: 16px;
+            background-size: 100%;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .userinfo .avatar .layui-icon {
+            width: 100%;
+            height: 100%;
+            display: block;
+            text-align: center;
+            line-height: 40px;
+            font-size: 20px!important;
+            background-color: #d7dce0;
+            border-radius: 50%;
+        }
+        .userinfo .avatar .type.toutiao {
+            background-image: url('/static/images/member/douyin.jpg');
+        }
+        .userinfo .avatar .type.wechat {
+            background-image: url('/static/images/member/wechat.jpg');
+        }
+        .userinfo .avatar .type.wxapp {
+            background-image: url('/static/images/member/weapp.jpg');
+        }
+        .userinfo .info {
+            line-height: 16px;
+            padding: 4px;
+        }
+        .userinfo .nickname {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .layui-table-cell {
+            height: unset;
+            line-height: unset;
+            padding: 6px 15px 0 15px;
+        }
+        .layui-table-cell.laytable-cell-1-0-1 {
+            overflow: unset;
+        }
+        .layui-table-view .layui-table[lay-size=lg] .layui-table-cell {
+            line-height: 50px;
+        }
+    </style>
+{/block}
 {block name="main"}
-    <div>111111</div>
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="LAY-list-table" lay-filter="LAY-list-table"></table>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<!-- 工具栏 -->
+<script type="text/html" id="table-toolbar">
+    <span class="layui-btn-group" style="margin-left: -15px;">
+        <button class="layui-btn layui-btn-sm layui-btn-primary layui-border" lay-event="refresh">
+            <div data-anim="layui-anim-rotate"><i class="layui-icon layui-icon-refresh"></i></div>
+        </button>
+        {if checkAccess("agentAdd")}
+        <button class="layui-btn layui-btn-sm" lay-event="add" data-type="add">
+            <i class="layui-icon layui-icon-add-1"></i>添加代理商
+        </button>
+        {/if}
+    </span>
+</script>
+
+<!-- 会员信息 -->
+<script type="text/html" id="table-userinfo">
+    <div class="userinfo">
+        <div class="avatar">
+            <div class="image">
+                {{#if (d.memberInfo.avatar != '') { }}
+                <img src="{{ns.img(d.memberInfo.avatar)}}" />
+                {{# } else { }}
+                <i class="layui-icon layui-icon-user"></i>
+                {{# } }}
+            </div>
+            {{# if (d.memberInfo.wxapp_openid != '') { }}
+            <i class="type wxapp"></i>
+            {{# } else if (d.memberInfo.wechat_openid != '') { }}
+            <i class="type wechat"></i>
+            {{# } else if (d.memberInfo.toutiao_openid != '') { }}
+            <i class="type toutiao"></i>
+            {{# } }}
+        </div>
+        <div class="info">
+            <div class="nickname">{{d.memberInfo.nickname}}</div>
+            <div class="mobile">{{d.memberInfo.mobile}}</div>
+        </div>
+    </div>
+</script>
+
+<!-- 会员状态 -->
+<script type="text/html" id="table-status">
+    {{# if(d.status == 1) { }}
+    <input type="checkbox" name="switch" lay-skin="switch" lay-text="启用|禁用" lay-filter="status" value="1" data-id="{{d.agent_id}}" data-filtered="filtered" checked />
+    {{# } else { }}
+    <input type="checkbox" name="switch" lay-skin="switch" lay-text="启用|禁用" lay-filter="status" value="1" data-id="{{d.agent_id}}" data-filtered="filtered" />
+    {{# } }}
+</script>
+
+<!-- 代理等级 -->
+<script type="text/html" id="table-level">
+    {{# if (d.level) { }}
+    <span>{{d.level.levelname}}</span>
+    {{# } else { }}
+    ----
+    {{# } }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="table-tool">
+    <div class="layui-btn-list">
+        {if checkAccess("agentEdit")}
+        <a class="layui-btn layui-btn-xs layui-btn-transparent" lay-event="edit">
+            <i class="fa fa-pencil"></i>
+            编辑
+        </a>
+        {/if}
+        {if checkAccess("agentDel")}
+        <a class="layui-btn layui-btn-xs layui-btn-transparent" lay-event="more">
+            <i class="fa fa-trash-o"></i>
+            删除
+        </a>
+        {/if}
+    </div>
+</script>
+
+<script>
+    var jQuery, $, route = {
+        add: "{:url('agentAdd')}",
+        edit: "{:url('agentEdit')}",
+        status: "{:url('agentStatus')}",
+        del: "{:url('agentDel')}"
+    };
+</script>
+<script src="/static/admin/addons/agent.js?_=1.0.1"></script>
 {/block}

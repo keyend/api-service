@@ -1,0 +1,173 @@
+{extend name="$base" /}
+{block name="main"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="LAY-list-table" lay-filter="LAY-list-table"></table>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<!-- 工具栏 -->
+<script type="text/html" id="table-toolbar">
+    <span class="layui-btn-group" style="margin-left: -15px;">
+        <button class="layui-btn layui-btn-sm layui-btn-primary layui-border" lay-event="refresh">
+            <div data-anim="layui-anim-rotate"><i class="layui-icon layui-icon-refresh"></i></div>
+        </button>
+        {if checkAccess("memberAppsAdd")}
+        <button class="layui-btn layui-btn-sm" lay-event="add" data-type="add">
+            添加应用
+        </button>
+        {/if}
+    </span>
+</script>
+<!-- 操作 -->
+<script type="text/html" id="table-tool">
+    <div class="layui-btn-list">
+        {if checkAccess("memberAppEdit")}
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        {/if}
+        {if checkAccess("memberAppDel")}
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+        {/if}
+    </div>
+</script>
+
+<script>
+    var member_id = {$Request.get.id};
+
+    layui.config({ base: '/static/admin/' }).use(['table', 'form'], function(){
+        var $ = layui.$ 
+        , table = layui.table
+        , pageTable
+        , form = layui.form
+        , active = {
+            cols: [
+                [{
+                    type: "numbers",
+                    title: "#",
+                    width: 60
+                }, {
+                    field: "id",
+                    title: "mer_id",
+                    width: 120
+                }, {
+                    field: "app_name",
+                    title: "应用名称",
+                    width: 120
+                }, {
+                    field: "app_key",
+                    title: "key",
+                    width: 320
+                }, {
+                    field: "remark",
+                    title: "备注"
+                }, {
+                    title: "操作",
+                    width: 150,
+                    fixed: "right",
+                    toolbar: "#table-tool"
+                }]
+            ],
+            add(){
+                ns.open("{:url('memberAppAdd')}?member_id=" + member_id, '添加应用', [ '680px', '425px' ]).then(() => {
+                    pageTable.reload()
+                })
+            },
+            edit(e) {
+                ns.open("{:url('memberAppEdit')}?id=" + e.data.id, '编辑应用', [ '680px', '425px' ]).then(() => {
+                    pageTable.reload()
+                })
+            },
+            del(e) {
+                top.layer.confirm('您确定要删除该应用？', {
+                    title: '友情提示',
+                    icon: 3,
+                    btn: ['是的', '再想想']
+                }, function(i) {
+                    top.layer.close(i),
+                    ns.silent("{:url('memberAppDel')}", {id: e.data.id}, res => {
+                        if (res.code == 0) {
+                            setTimeout(() => pageTable.reload(), 100)
+                        } else {
+                            layer.alert(res.message)
+                        }
+                    })
+                });
+            },
+            render() {
+                pageTable = table.render({
+                    elem: "#LAY-list-table",
+                    url: location.href + '&_=' + (new Date()).getTime(),
+                    toolbar: '#table-toolbar',
+                    cols: active.cols,
+                    response: { msgName: 'message' },
+                    where: { member_id: member_id },
+                    skin: 'line',
+                    page: !0,
+                    limit: 100,
+                    limits: [100, 200, 300, 500],
+                    height: "full-220",
+                    text: { none: "无数据" },
+                    parseData: function(res) {
+                        return {
+                            code: res.code,
+                            msg: res.message,
+                            count: res.data.count,
+                            data: res.data.list
+                        }
+                    },
+                    done: function() {
+                        ns.page = this.page.curr;
+                    }
+                }),
+
+                table.on('toolbar(LAY-list-table)', function(o) {
+                    active[o.event] ? active[o.event].call(this, o) : '';
+                }),
+
+                table.on("tool(LAY-list-table)", function(e) {
+                    active[e.event] ? active[e.event].call(this, e) : '';
+                }),
+
+                table.on("pagebar(LAY-list-table)", function(e) {
+                    console.log(e);
+                })
+            },
+            refresh(o) {
+                var othis = $(this).find('div'), anim = othis.data('anim');
+                if (!othis.hasClass(anim)) {
+                    othis.removeClass(anim);
+                    othis.addClass(anim);
+                    setTimeout(() => {
+                        pageTable.reload(),
+                        othis.removeClass(anim)
+                    }, 1300)
+                }
+            }
+        };
+
+        form.on('switch(status)', function(obj){
+            active.status(obj.value, obj.elem.checked)
+        }),
+        form.on('submit(LAY-btn-search)', function(data){
+            var field = data.field;
+            table.reload('LAY-list-table', { 
+                where: field,
+                page: { curr: 1 }
+            });
+        }),
+
+        form.on('submit(LAY-btn-reset)', function(data){
+            var field = data.field;
+            table.reload('LAY-list-table', { 
+                where: {},
+                page: { curr: 1 }
+            });
+        }),
+
+        window.addEventListener("load", function() {
+            active.render()
+        });
+    })
+</script>
+{/block}

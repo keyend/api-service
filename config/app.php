@@ -29,4 +29,5 @@ return [
 
     // 错误显示信息,非调试模式有效
     'error_message'    => 'Server Unavailable',
+    'show_error_msg'   => true
 ];

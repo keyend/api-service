@@ -1,0 +1,124 @@
+{extend name="$base" /}
+{block name="resources"}
+<style>
+    .layui-layout-body {
+        padding: 20px;
+    }
+    .flex {
+        display: flex;
+    }
+    .layui-layout-body  > .layui-card {
+        margin-bottom: 20px;
+    }
+    .layui-text h3 {
+        font-size: 14px;
+    }
+    .layui-card .layui-form-item {
+        margin-bottom: 0px;
+    }
+    .layui-card .value {
+        padding: 5px 0;
+    }
+    .layui-card .value.remark {
+        padding: 5px 10px;
+        border: 1px solid #eee;
+        min-height: 3.6rem;
+        background-color: #f0f0f0;
+        word-break: break-all;
+    }
+    .header {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+    }
+    .header .info {
+        display: flex;
+        align-items: center;
+    }
+    .userinfo{padding:20px 60px; display:flex}
+    .userinfo .avatar{width:40px;height:40px;position:relative;margin-right:5px}
+    .userinfo .avatar .image{width:100%;height:100%;overflow:hidden}
+    .userinfo .avatar .image img{min-height:100%;min-width:100%;max-width:140%;max-height:140%;object-fit:contain}
+    .userinfo .avatar .type{position:absolute;right:-5px;bottom:0;width:16px;height:16px;background-size:100%;border-radius:50%;z-index:1}
+    .userinfo .avatar .layui-icon{width:100%;height:100%;display:block;text-align:center;line-height:40px;font-size:20px!important;background-color:#d7dce0;border-radius:50%}
+    .userinfo .avatar .type.toutiao{background-image:url(/static/images/member/douyin.jpg)}
+    .userinfo .avatar .type.wechat{background-image:url(/static/images/member/wechat.jpg)}
+    .userinfo .avatar .type.wxapp{background-image:url(/static/images/member/weapp.jpg)}
+    .userinfo .info{line-height:16px;padding:4px}
+    .userinfo .nickname{font-weight:700;font-size:14px}
+</style>
+{/block}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-header">记录明细</div>
+    <div class="layui-card-body">
+        <div class="header flex">
+            <div class="userinfo">
+                <div class="avatar">
+                    <div class="image">
+                        {if $item.memberInfo.avatar}
+                        <img src="{$item.memberInfo.avatar}" />
+                        {else}
+                        <i class="layui-icon layui-icon-user"></i>
+                        {/if}
+                    </div>
+                    {if !empty($item.memberInfo.wxapp_openid)}
+                    <i class="type wxapp"></i>
+                    {elseif !empty($item.memberInfo.wechat_openid)}
+                    <i class="type wechat"></i>
+                    {elseif !empty($item.memberInfo.toutiao_openid)}
+                    <i class="type toutiao"></i>
+                    {/if}
+                </div>
+                <div class="info">
+                    <div>
+                        <div class="nickname">{$item.memberInfo.nickname}</div>
+                        <div class="mobile">{$item.memberInfo.mobile}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="orderinfo layui-form">
+            <div class="layui-form-item" style="margin-bottom: 10px;">
+                <div class="layui-form-label">请求方式：</div>
+                <div class="layui-input-inline" style="width: 500px;">
+                    <div class="value">{$item.protocolInfo.method}</div>
+                </div>
+            </div>
+            <div class="layui-form-item" style="margin-bottom: 10px;">
+                <div class="layui-form-label">接口名：</div>
+                <div class="layui-input-inline" style="width: 500px;">
+                    <div class="value">{$item.protocol}</div>
+                </div>
+            </div>
+            <div class="layui-form-item" style="margin-bottom: 10px;">
+                <div class="layui-form-label">pathinfo：</div>
+                <div class="layui-input-inline" style="width: 500px;">
+                    <div class="value">{$item.pathname}</div>
+                </div>
+            </div>
+            <div class="layui-form-item" style="margin-bottom: 10px;">
+                <div class="layui-form-label">时间：</div>
+                <div class="layui-input-inline" style="width: 500px;">
+                    <div class="value">{$item.create_time}</div>
+                </div>
+            </div>
+            <div class="layui-form-item" style="margin-bottom: 20px;">
+                <div class="layui-form-label">提交参数：</div>
+                <div class="layui-input-inline" style="width: 500px;">
+                    <div class="value remark">
+                        {$item.param}
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item" style="margin-bottom: 10px;">
+                <div class="layui-form-label">返回结果：</div>
+                <div class="layui-input-inline" style="width: 500px;">
+                    <div class="value remark">
+                        {$item.response}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}

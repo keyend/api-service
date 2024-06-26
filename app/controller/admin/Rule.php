@@ -61,7 +61,7 @@ class Rule extends Controller
             $edit['module'] = MODULE;
             $parentRule = [];
             if ($id != 0) {
-                $parentRule = $rule->find($id);
+                $parentRule = $rule->where('rule_id', $id)->find();
             }
             $this->assign('parentRule', $parentRule);
             $this->assign('edit', $edit);

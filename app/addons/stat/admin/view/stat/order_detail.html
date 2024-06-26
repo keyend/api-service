@@ -1,0 +1,265 @@
+{extend name="$base" /}
+{block name="resources"}
+<style>
+    .layui-layout-body {
+        padding: 20px;
+    }
+    .flex {
+        display: flex;
+    }
+    .layui-layout-body  > .layui-card {
+        margin-bottom: 20px;
+    }
+    .layui-text h3 {
+        font-size: 14px;
+    }
+    .layui-card .layui-form-item {
+        margin-bottom: 0px;
+    }
+    .layui-card .value {
+        padding: 5px 0;
+    }
+    .layui-card .value.remark {
+        padding: 5px 10px;
+        border: 1px solid #eee;
+        min-height: 3.6rem;
+        background-color: #f0f0f0;
+    }
+    .orderinfo .header .layui-icon {
+        display: flex;
+        width: 60px;
+        height: 60px;
+        font-size: 48px;
+        align-items: center;
+        margin-right: 15px;
+    }
+    .orderinfo .header {
+        padding-bottom: 20px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    .orderinfo .header .info {
+        display: flex;
+        align-items: center;
+    }
+    .orderinfo .layui-card:not(:last-child) {
+        padding-right: 2rem;
+        border-right: 1px dotted #eee;
+    }
+    .orderinfo .layui-card {
+        box-shadow: unset;
+        margin-bottom: 0px;
+    }
+</style>
+{/block}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-header">订单详情</div>
+    <div class="layui-card-body">
+        <div class="orderinfo">
+            <div class="header flex">
+                <i class="layui-icon layui-icon-form text-center"></i>
+                <div class="info">
+                    <div>
+                        <div class="title">[{$item.order_type_name ?? ''}]</div>
+                        <div class="subtitle">订单号：{$item.out_trade_no}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="content flex">
+                <div class="layui-card">
+                    <div class="layui-card-body layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-form-label">订单编号：</div>
+                            <div class="layui-input-block"><div class="value">{$item.out_trade_no}</div></div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-form-label">下单时间：</div>
+                            <div class="layui-input-block"><div class="value">{$item.create_time|date="Y-m-d H:i"}</div></div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-form-label">订单金额：</div>
+                            <div class="layui-input-block"><div class="value">{$item.order_money|number_format=2,'.',''}元</div></div>
+                        </div>
+                    </div>
+                </div>
+                <!---->
+                
+                <div class="layui-card">
+                    <div class="layui-card-body layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-form-label">付款方式：</div>
+                            <div class="layui-input-block"><div class="value">
+                                {if $item.pay.pay_type == 'BALANCE'}
+                                余额支付
+                                {elseif $item.pay.pay_type == 'WXPAY'}
+                                微信支付
+                                {elseif $item.pay.pay_type == 'DIRECT'}
+                                系统赠送
+                                {/if}
+                            </div></div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-form-label">支付金额：</div>
+                            <div class="layui-input-block"><div class="value">{$item.pay.pay_money|number_format=2,'.',''}元</div></div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-form-label">付款时间：</div>
+                            <div class="layui-input-block"><div class="value">{$item.pay.update_time|date="Y-m-d H:i"}</div></div>
+                        </div>
+                    </div>
+                </div>
+                <!---->
+                
+                <div class="layui-card">
+                    <div class="layui-card-body layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-form-label">购买人：</div>
+                            <div class="layui-input-block"><div class="value">{$item.nickname}</div></div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-form-label">手机号：</div>
+                            <div class="layui-input-block"><div class="value">{$item.mobile}</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="layui-card">
+    <div class="layui-card-header">订单状态</div>
+    <div class="layui-card-body layui-form">
+        <div class="layui-form-item">
+            <div class="layui-form-label">订单状态：</div>
+            <div class="layui-input-block">
+                <div class="value">
+                    {if $item.order_status == 2}
+                    <span class="layui-btn layui-btn-sm">已支付</span>
+                    {elseif $item.order_status == 3}
+                    <span class="layui-btn layui-btn-sm layui-bg-orange">已取消</span>
+                    {else}
+                    <span class="layui-btn layui-btn-sm layui-bg-blue">待支付</span>
+                    {/if}
+                </div>
+                <div class="value">
+                    <!-- 发货、退款等操作 -->
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-bottom: 10px;">
+            <div class="layui-form-label">买家留言：</div>
+            <div class="layui-input-inline" style="width: 500px;">
+                <div class="value remark">
+                    {$item.buyer_message|raw}
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-form-label">订单备注：</div>
+            <div class="layui-input-block">
+                <div class="layui-inline" style="width: 500px;">
+                    <div class="value remark" id="remark">
+                        {$item.remark|raw}
+                    </div>
+                </div>
+                <div class="layui-word-aux">
+                    <div class="layui-btn-group">
+                        <a class="layui-btn layui-btn-xs layui-bg-blue" lay-on="memo" data-id="{$item.order_id}">设置备注</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="layui-card">
+    <div class="layui-card-header">商品信息</div>
+    <div class="layui-card-body">
+        <table class="layui-table" lay-skin="line">
+            <colgroup>
+                <col />
+                <col width="120" />
+                <col width="120" />
+                <col width="120" />
+            </colgroup>
+            <thead class="layui-table-header">
+                <th>商品信息</th>
+                <th>价格</th>
+                <th>数量</th>
+                <th>小计</th>
+            </thead>
+            <tbody>
+                {foreach $item.goods_list as $og}
+                <tr>
+                    <td>{$og.goods_title}</td>
+                    <td>{$og.unitprice}元</td>
+                    <td>{$og.num}</td>
+                    <td>{$og.goods_price}元</td>
+                </tr>
+                {/foreach}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="layui-card">
+    <div class="layui-card-header">订单记录</div>
+    <div class="layui-card-body">
+        <div class="layui-timeline">
+            {foreach $item.logs as $v}
+            <div class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis"></i>
+                <div class="layui-timeline-content layui-text">
+                    <h3 class="layui-timeline-title">{$v.create_time|date='Y-m-d H:i'}</h3>
+                    <p>{$v.content|raw}</p>
+                </div>
+            </div>
+            {/foreach}
+        </div>
+    </div>
+</div>
+<div>&nbsp;</div>
+{/block}
+{block name="script"}
+<script>
+    var orderinfo = {$item|json_encode|raw};
+    var route = {
+        update: "{:url('statOrderUpdate')}"
+    };
+
+    layui.use(['form', 'util'], function(){
+        var $ = layui.$
+        ,form = layui.form
+        ,util = layui.util;
+
+        util.on({
+            memo() {
+                top.layer.prompt({
+                    formType: 2,
+                    value: orderinfo.remark,
+                    title: '订单备注',
+                    area: ['360px', '120px'],
+                    yes: function(index, layero){
+                        var value = layero.find(".layui-layer-input").val();
+                        if(value.trim().length > 230){
+                            layer.msg("最多230个字符！");
+                            return false;
+                        }
+                        top.layer.close(index),
+                        ns.silent(route.update, {
+                            order_id: orderinfo.order_id,
+                            name: 'remark',
+                            value: value
+                        }, res => {
+                            if (res.code != 0) {
+                                layer.alert(res.message)
+                            } else {
+                                $('#remark').text(value)
+                            }
+                        })
+                    }
+                });
+            }
+        })
+    });
+</script>
+{/block}

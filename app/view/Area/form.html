@@ -7,7 +7,7 @@
                 <div class="layui-form-item">
                     <label class="layui-form-label">上级区域：</label>
                     <div class="layui-input-block">
-                        <input type="hidden" name="parent_id" value="{$edit.parent.id ?? 0}" />
+                        <input type="hidden" name="parentid" value="{$edit.parent.id ?? 0}" />
                         <input type="text" class="layui-input" value="{$edit.parent.areaname ?? ''}" disabled />
                     </div>
                 </div>
@@ -28,19 +28,19 @@
                 <div class="layui-form-item">
                     <label class="layui-form-label">邮编：</label>
                     <div class="layui-input-block">
-                        <input type="text" name="zipcode" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.zipcode.code}" />
+                        <input type="text" name="zipcode" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.zipcode}" />
                     </div>
                 </div>
                 <div class="layui-form-item">
                     <label class="layui-form-label">经度：</label>
                     <div class="layui-input-block">
                         <div class="layui-col-xs5">
-                            <input type="text" name="lng" lay-verify="required" placeholder="0.0000000" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.lng??''}" />
+                            <input type="text" name="lng" placeholder="0.0000000" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.lng??''}" />
                         </div>
                         <div class="layui-col-xs7">
                             <label class="layui-form-label">纬度：</label>
                             <div class="layui-input-block">
-                                <input type="text" name="lat" lay-verify="required" placeholder="0.0000000" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.lat??''}" />
+                                <input type="text" name="lat" placeholder="0.0000000" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.lat??''}" />
                             </div>
                         </div>
                     </div>
@@ -56,7 +56,7 @@
     </div>
 </div>
 {/block}
-{block name="scripts"}
+{block name="script"}
 <script>
     layui.use(['form'], function(){
         var $ = layui.$

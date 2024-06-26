@@ -1,0 +1,397 @@
+{extend name="$base" /}
+{block name="resources"}
+    <style>
+        .userinfo {
+            padding: 4px 0;
+            display: flex;
+        }
+        .userinfo .avatar {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            margin-right: 5px;
+        }
+        .userinfo .avatar .image {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .userinfo .avatar .image img{
+            min-height: 100%;
+            min-width: 100%;
+            max-width: 140%;
+            max-height: 140%;
+            object-fit: contain;
+        }
+        .userinfo .avatar .type {
+            position: absolute;
+            right: -5px;
+            bottom: 0px;
+            width: 16px;
+            height: 16px;
+            background-size: 100%;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .userinfo .avatar .layui-icon {
+            width: 100%;
+            height: 100%;
+            display: block;
+            text-align: center;
+            line-height: 40px;
+            font-size: 20px!important;
+            background-color: #d7dce0;
+            border-radius: 50%;
+        }
+        .userinfo .avatar .type.toutiao {
+            background-image: url('/static/images/member/douyin.jpg');
+        }
+        .userinfo .avatar .type.wechat {
+            background-image: url('/static/images/member/wechat.jpg');
+        }
+        .userinfo .avatar .type.wxapp {
+            background-image: url('/static/images/member/weapp.jpg');
+        }
+        .userinfo .info {
+            line-height: 16px;
+            padding: 4px;
+        }
+        .userinfo .nickname {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .layui-table-cell {
+            height: unset;
+            line-height: unset;
+            padding: 6px 15px 0 15px;
+        }
+        .layui-table-cell.laytable-cell-1-0-1 {
+            overflow: unset;
+        }
+        .layui-table-view .layui-table[lay-size=lg] .layui-table-cell {
+            line-height: 50px;
+        }
+        .layui-btn-transparent,
+        .layui-btn-transparent:active,
+        .layui-btn-transparent:hover {
+            color: white;
+            background-color: #16baaa;
+            font-weight: bold;
+        }
+        .layui-menu li:hover {
+            background-color: #d2d2ff;
+        }
+        .layui-menu li {
+            line-height: 18px;
+        }
+        .layui-menu .layui-menu-item-divider {
+            margin: 1px 5px;
+        }
+    </style>
+{/block}
+{block name="main"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form layui-form-filter">
+            <div class="layui-form-item" style="margin-bottom: 0px;">
+                <div class="layui-inline">
+                    <label class="layui-form-label">记录筛选</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="keyword" placeholder="请输入关键字" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">会员等级</label>
+                    <div class="layui-input-block">
+                        <select name="level_id">
+                            <option value="">全部</option>
+                            {foreach $level_list as $level}
+                            <option value="{$level.level}">{$level.levelname}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">注册时间</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="regtime" id="regtime" placeholder=" - " autocomplete="off" class="layui-input" readonly />
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-sm" lay-submit lay-filter="LAY-btn-search">
+                        查询
+                    </button>
+                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">
+                        清空
+                    </button>
+                </div>
+            </div>
+        </form>
+        <!---->
+        <table id="LAY-list-table" lay-filter="LAY-list-table"></table>
+    </div>
+</div>
+{/block}
+
+{block name="script"}
+<!-- 工具栏 -->
+<script type="text/html" id="table-toolbar">
+    <span class="layui-btn-group" style="margin-left: -15px;">
+        <button class="layui-btn layui-btn-sm layui-btn-primary layui-border" lay-event="refresh">
+            <div data-anim="layui-anim-rotate"><i class="layui-icon layui-icon-refresh"></i></div>
+        </button>
+        {if checkAccess("memberAdd")}
+        <button class="layui-btn layui-btn-sm" lay-event="add" data-type="add">
+            添加会员
+        </button>
+        {/if}
+    </span>
+</script>
+
+<!-- 会员信息 -->
+<script type="text/html" id="table-userinfo">
+    <div class="userinfo">
+        <div class="avatar">
+            <div class="image">
+                {{#if (d.avatar != '') { }}
+                <img src="{{d.avatar}}" />
+                {{# } else { }}
+                <i class="layui-icon layui-icon-user"></i>
+                {{# } }}
+            </div>
+            {{# if (d.wxapp_openid != '') { }}
+            <i class="type wxapp"></i>
+            {{# } else if (d.wechat_openid != '') { }}
+            <i class="type wechat"></i>
+            {{# } else if (d.toutiao_openid != '') { }}
+            <i class="type toutiao"></i>
+            {{# } }}
+        </div>
+        <div class="info">
+            <div class="nickname">{{d.nickname}}</div>
+            <div class="mobile">
+                {{d.mobile}}
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- 会员标记 -->
+<script type="text/html" id="table-label">
+    {{# if (d.is_virtual) { }}
+    <span class="layui-btn layui-btn-xs layui-bg-blue" title="虚拟会员" style="zoom: .8;">虚</span>
+    {{# } }}
+    {{# d.label_list.forEach(function(v,index) { }}
+    {{# console.log(v,index) }}
+    <span style="color: #{{=(Math.PI*(index+1)).toString().substr(-6)}};">{{=v.labelname}}</span>
+    {{# }) }}
+</script>
+
+<!-- 会员状态 -->
+<script type="text/html" id="table-userstatus">
+    {{# if(d.status == 1) { }}
+    <input type="checkbox" name="switch" lay-skin="switch" lay-text="启用|禁用" lay-filter="status" value="{{d.member_id}}" data-filtered="filtered" checked />
+    {{# } else { }}
+    <input type="checkbox" name="switch" lay-skin="switch" lay-text="启用|禁用" lay-filter="status" value="{{d.member_id}}" data-filtered="filtered" />
+    {{# } }}
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="table-tool">
+    <div class="layui-btn-list">
+        {if checkAccess("memberDetail")}
+        <a class="layui-btn layui-btn-xs layui-btn-transparent" lay-event="edit">明细</a>
+        {/if}
+        {if checkAccess("memberDel")}
+        <a class="layui-btn layui-btn-xs layui-btn-transparent" lay-event="more">更多</a>
+        {/if}
+    </div>
+</script>
+
+<!-- 重置密码 -->
+<script type="text/html" id="user-pwd">
+	<form class="layui-form" lay-filter="user-pwd" style="padding: 15px;" method="POST">
+		<div class="layui-form-item">
+			<label class="layui-form-label must">新密码：</label>
+			<div class="layui-input-inline">
+				<input type="password" name="password" id="newpass" lay-verify="required|password" class="layui-input len-mid" maxlength="18" />
+			</div>
+			<div class="layui-form-mid layui-word-aux">密码长度应大于6位，字母数字组合</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label must">确认密码：</label>
+			<div class="layui-input-inline">
+				<input type="password" name="password2" id="repass" lay-verify="repass|required|password" class="layui-input len-mid" maxlength="18" />
+			</div>
+			<div class="layui-form-mid layui-word-aux">请再一次输入密码，两次输入密码须一致</div>
+		</div>
+	</form>
+</script>
+
+<!-- 调整余额 -->
+<script type="text/html" id="user-balance">
+	<form class="layui-form" lay-filter="user-balance" style="padding: 15px 15px 0 0;" method="POST">
+		<div class="layui-form-item">
+			<label class="layui-form-label">当前余额：</label>
+			<div class="layui-input-block">
+				<input type="text" class="layui-input len-long layui-disabled" maxlength="18" value="{{=d.balance_money}}" disabled />
+			</div>
+		</div>
+
+        <div class="layui-form-item">
+			<label class="layui-form-label must">充值金额：</label>
+			<div class="layui-input-inline">
+				<input type="number" name="amount" id="amount" lay-verify="required" class="layui-input len-mid" maxlength="6" placeholder="0" />
+			</div>
+		</div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注说明：</label>
+            <div class="layui-input-block">
+                <textarea 
+                    class="layui-textarea" 
+                    name="remark" 
+                    placeholder="" 
+                    style="min-height: 80px"
+                ></textarea>
+            </div>
+        </div>
+	</form>
+</script>
+
+<!-- 购买套餐 -->
+<script type="text/html" id="user-combo">
+    <style>
+        .userinfo{padding:4px 0;display:flex}
+        .userinfo .avatar{width:40px;height:40px;position:relative;margin-right:5px}
+        .userinfo .avatar .image{width:100%;height:100%;overflow:hidden}
+        .userinfo .avatar .image img{min-height:100%;min-width:100%;max-width:140%;max-height:140%;object-fit:contain}
+        .userinfo .avatar .type{position:absolute;right:-5px;bottom:0;width:16px;height:16px;background-size:100%;border-radius:50%;z-index:1}
+        .userinfo .avatar .layui-icon{width:100%;height:100%;display:block;text-align:center;line-height:40px;font-size:20px!important;background-color:#d7dce0;border-radius:50%}
+        .userinfo .avatar .type.toutiao{background-image:url(/static/images/member/douyin.jpg)}
+        .userinfo .avatar .type.wechat{background-image:url(/static/images/member/wechat.jpg)}
+        .userinfo .avatar .type.wxapp{background-image:url(/static/images/member/weapp.jpg)}
+        .userinfo .info{line-height:16px;padding:4px}
+        .userinfo .nickname{font-weight:700;font-size:14px}
+        .user-combo-account{display:flex;padding:12px;border:1px dotted #ccc;margin:0 0 20px 20px}
+        .accountinfo{display:flex;margin-left:auto;font-size:12px;justify-content:center;align-items:center;border-left:1px dotted #ccc;padding:0 12px;padding-left:1rem}
+        .accountinfo .title{font-size:1.2rem;text-align:center}
+    </style>
+	<form class="layui-form" lay-filter="user-combo" style="padding: 15px 30px 0 15px;" method="POST">
+		<div class="user-combo-account flex">
+            <div class="userinfo">
+                <div class="avatar">
+                    <div class="image">
+                        {{#if (d.avatar != '') { }}
+                        <img src="{{d.avatar}}" />
+                        {{# } else { }}
+                        <i class="layui-icon layui-icon-user"></i>
+                        {{# } }}
+                    </div>
+                    {{# if (d.wxapp_openid != '') { }}
+                    <i class="type wxapp"></i>
+                    {{# } else if (d.wechat_openid != '') { }}
+                    <i class="type wechat"></i>
+                    {{# } else if (d.toutiao_openid != '') { }}
+                    <i class="type toutiao"></i>
+                    {{# } }}
+                </div>
+                <div class="info">
+                    <div class="nickname">{{d.nickname}}</div>
+                    <div class="mobile">{{d.mobile}}</div>
+                </div>
+            </div>
+            <div class="accountinfo">
+                <div class="inner text-center">
+                    <div class="title">{{d.balance_money}}</div>
+                    <div class="subtitle">账户余额</div>
+                </div>
+            </div>
+        </div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">购买套餐：</label>
+			<div class="layui-input-inline">
+                <input type="hidden" name="combo_money" value="{$combo_list[0]['combo_money'] ?? 0}" />
+                <select name="combo_id" lay-filter="combo_id" lay-search="">
+                    {foreach $combo_list as $combo}
+                    <option value="{$combo.id}" data-money="{$combo.combo_money}">{$combo.combo}</option>
+                    {/foreach}
+                </select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">购买套餐：</label>
+			<div class="layui-input-inline">
+				<input type="number" name="num" id="num" lay-verify="required" class="layui-input len-mid" maxlength="2" placeholder="0" value="1" />
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">账户扣费：</label>
+			<div class="layui-input-inline" style="padding-left: 5px;">
+                <input 
+                    type="checkbox" 
+                    name="is_deduct" 
+                    lay-text="购买套餐时从会员账户扣费" 
+                    value="1"
+                    checked 
+                />
+			</div>
+		</div>
+	</form>
+</script>
+
+<!-- 团队关系图 -->
+<script type="text/html" id="user-tree">
+	<div class="layui-form layui-form-tree" style="height: 100%;">
+		<div class="layui-tree" style="padding: 15px; height: calc(100% - 30px); overflow: auto;">
+			<div class="layui-btn-group" style="position: absolute;right: 20px;top: 20px;">
+				<a href="javascript:void(0);" class="layui-btn layui-btn-normal" lay-filter="refresh">刷新</a>
+				<a href="javascript:void(0);" class="layui-btn" lay-filter="reload">重载</a>
+			</div>
+			<ul id="mixed" class="filetree"></ul>
+		</div>
+	</div>
+</script>
+
+<!-- 设置标签 -->
+<script type="text/html" id="user-label">
+    <style>
+        .layui-label-list .layui-btn {
+            margin: 6px 2.5px;
+        }
+    </style>
+	<form class="layui-form" lay-filter="user-label" style="height: 100%;" action="POST">
+		<div class="layui-label-list" style="padding: 15px; height: calc(100% - 30px); overflow: auto;">
+            <div style="padding: 0 5px;">
+            {{# d.list.forEach(function(v) { }}
+                {{# if (v.selected) { }}
+                <span class="layui-btn layui-btn-xs layui-btn-success" data-selected="1" data-id="{{=v.id}}" lay-on="label">{{=v.labelname}}</span>
+                {{# } else { }}
+                <span class="layui-btn layui-btn-xs layui-btn-primary" data-selected="0" data-id="{{=v.id}}" lay-on="label">{{=v.labelname}}</span>
+                {{# } }}
+            {{# }) }}
+            </div>
+            <input type="hidden" name="id" value="{{d.id}}" />
+            <input type="hidden" name="label_ids" id="ids" value="{{d.ids}}" />
+        </div>
+    </form>
+</script>
+
+<script>
+    var jQuery, $, route = {
+        add: "{:url('memberAdd')}",
+        edit: "{:url('memberEdit')}",
+        modifyParent: "{:url('memberModifyParent')}",
+        tree: "{:url('memberTree')}",
+        password: "{:url('memberChangePwd')}",
+        recharge: "{:url('memberRecharge')}",
+        label: "{:url('memberModifyLabel')}",
+        del: "{:url('memberDel')}",
+        status: "{:url('memberStatus')}",
+        labels: "{:url('memberLabel')}",
+        buyCombo: "{:url('memberBuyCombo')}",
+        orderComplete: "{:url('sysOrderComplete')}"
+    };
+</script>
+<script src="/static/admin/addons/member.js?_=1.0.2"></script>
+{/block}

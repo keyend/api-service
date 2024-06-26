@@ -1,0 +1,199 @@
+{extend name="$base" /}
+{block name="resources"}
+<style>
+    .layui-form-filter .layui-inline{margin-top:.9rem}
+    .layui-table[lay-skin=line] th{border-color:#c9cdd0}
+    .layui-table[lay-skin=line] th>.layui-table-cell{line-height:50px!important}
+    .layui-table[lay-skin=line]{width:unset!important}
+</style>
+{/block}
+{block name="main"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form layui-form-filter">
+            <div class="layui-form-item" style="margin-bottom: 0px;">
+                <div class="layui-inline">
+                    <label class="layui-form-label">记录筛选</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="keyword" placeholder="请输入关键字" autocomplete="off" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">财务类型</label>
+                    <div class="layui-input-block">
+                        <select name="account_type">
+                            <option value="">全部</option>
+                            {foreach $account_type_list as $account_type}
+                            <option value="{$account_type.value}">{$account_type.title}</option>
+                            {/foreach}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">操作时间</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="create_time" id="create_time" placeholder=" - " autocomplete="off" class="layui-input" readonly />
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label"></label>
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-sm" lay-submit lay-filter="LAY-btn-search">
+                        查询
+                    </button>
+                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary" lay-submit lay-filter="LAY-btn-reset">
+                        清空
+                    </button>
+                </div>
+            </div>
+        </form>
+        <!---->
+        <table id="LAY-list-table" lay-filter="LAY-list-table"></table>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<!-- 工具栏 -->
+<script type="text/html" id="table-toolbar">
+    <span class="layui-btn-group" style="margin-left: -15px;">
+        <button class="layui-btn layui-btn-sm layui-btn-primary layui-border" lay-event="refresh">
+            <div data-anim="layui-anim-rotate"><i class="layui-icon layui-icon-refresh"></i></div>
+        </button>
+    </span>
+</script>
+<!-- 操作 -->
+<script type="text/html" id="table-tool">
+    <div class="layui-btn-list">
+    </div>
+</script>
+
+<script>
+    layui.config({ base: '/static/admin/' }).use(['table', 'form'], function(){
+        var $ = layui.$ 
+        , table = layui.table
+        , pageTable
+        , form = layui.form
+        , active = {
+            cols: [
+                [{
+                    type: "numbers",
+                    title: "#",
+                    width: 60
+                }, {
+                    field: "trade_no",
+                    title: "流水号",
+                    width: 180
+                }, {
+                    field: "member_id",
+                    title: "会员ID",
+                    width: 100
+                }, {
+                    field: "nickname",
+                    title: "呢称",
+                    width: 100
+                }, {
+                    field: "account_title",
+                    title: "事件类型",
+                    width: 120
+                }, {
+                    field: "value",
+                    title: "操作金额",
+                    width: 100,
+                    templet: '#table-status'
+                }, {
+                    field: "account_type",
+                    title: "账户类型",
+                    width: 120,
+                    templet(d) {
+                        if (d.account_type == 'balance_money') {
+                            return '账户余额'
+                        } else if(d.account_type == 'cash') {
+                            return '现金支付'
+                        } else if(d.account_type == 'direct') {
+                            return '后台赠送'
+                        }
+                    }
+                }, {
+                    field: "create_time",
+                    title: "操作时间",
+                    width: 160
+                }, {
+                    field: "remark",
+                    title: "备注"
+                }]
+            ],
+            render() {
+                pageTable = table.render({
+                    elem: "#LAY-list-table",
+                    url: location.href + '?_=' + (new Date()).getTime(),
+                    toolbar: '#table-toolbar',
+                    cols: active.cols,
+                    response: { msgName: 'message' },
+                    page: !0,
+                    limit: 100,
+                    limits: [100, 200, 300, 500],
+                    skin: 'line',
+                    size: 'lg',
+                    height: "full-220",
+                    text: { none: "无数据" },
+                    parseData: function(res) {
+                        return {
+                            code: res.code,
+                            msg: res.message,
+                            count: res.data.count,
+                            data: res.data.list
+                        }
+                    },
+                    done: function() {
+                        ns.page = this.page.curr;
+                    }
+                }),
+
+                table.on('toolbar(LAY-list-table)', function(o) {
+                    active[o.event] ? active[o.event].call(this, o) : '';
+                }),
+
+                table.on("tool(LAY-list-table)", function(e) {
+                    active[e.event] ? active[e.event].call(this, e) : '';
+                }),
+
+                table.on("pagebar(LAY-list-table)", function(e) {
+                    console.log(e);
+                })
+            },
+            refresh(o) {
+                var othis = $(this).find('div'), anim = othis.data('anim');
+                if (!othis.hasClass(anim)) {
+                    othis.removeClass(anim);
+                    othis.addClass(anim);
+                    setTimeout(() => {
+                        pageTable.reload(),
+                        othis.removeClass(anim)
+                    }, 1300)
+                }
+            }
+        };
+
+        form.on('submit(LAY-btn-search)', function(data){
+            var field = data.field;
+            table.reload('LAY-list-table', { 
+                where: field,
+                page: { curr: 1 }
+            });
+        }),
+
+        form.on('submit(LAY-btn-reset)', function(data){
+            var field = data.field;
+            table.reload('LAY-list-table', { 
+                where: {},
+                page: { curr: 1 }
+            });
+        }),
+
+        window.addEventListener("load", function() {
+            active.render()
+        });
+    })
+</script>
+{/block}

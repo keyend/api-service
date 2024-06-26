@@ -355,8 +355,6 @@
         ident: function(value, elem) {
             $(elem).removeClass("error");
             if (value == '') {
-                $(elem).addClass("error");
-                return "不能为空!"
             } else if(!/^[\w_.]{1,}$/.test(value)) {
                 $(elem).addClass("error");
                 return "输入应为字母、数字，下划线或.号!"

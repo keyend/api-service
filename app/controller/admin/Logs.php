@@ -124,6 +124,10 @@ class Logs extends Controller
 			}
             return $this->success();
         } else {
+            $this->assign('info', [
+                'name' => input('name', ''),
+                'params' => input('params', '')
+            ]);
             return $this->fetch('Logs/template_form');
         }
     }

@@ -1,0 +1,196 @@
+{extend name="$base" /}
+{block name="resources"}
+    <style>
+        .layui-card
+        .layui-table-cell {
+            height: unset;
+            line-height: unset;
+            padding: 6px 15px 0 15px;
+        }
+        .layui-table-cell.laytable-cell-1-0-1 {
+            overflow: unset;
+        }
+        .layui-table-view .layui-table .layui-table-cell {
+            line-height: 40px;
+        }
+    </style>
+{/block}
+{block name="main"}
+<div class="layui-card layui-card-full">
+    <div class="layui-card-body">
+        <table id="LAY-list-table" lay-filter="LAY-list-table"></table>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<!-- 工具栏 -->
+<script type="text/html" id="table-toolbar">
+    <span class="layui-btn-group" style="margin-left: -15px;">
+        <button class="layui-btn layui-btn-sm layui-btn-primary layui-border" lay-event="refresh">
+            <div data-anim="layui-anim-rotate"><i class="layui-icon layui-icon-refresh"></i></div>
+        </button>
+    </span>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="table-tool">
+    <div class="layui-btn-list">
+        {{# if (d.level_id != 0) { }}
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        {{# if (d.level != 1) { }}
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+        {{# } }}
+        {{# } else if (d.is_add == 1) { }}
+        <a class="layui-btn layui-btn-xs" lay-event="add" data-id="{{d.level_nextid}}">添加</a>
+        {{# } }}
+    </div>
+</script>
+
+<!-- 等级状态 -->
+<script type="text/html" id="table-status">
+    {{# if (d.level_id != 0) { }}
+        {{# if (d.is_default == 1) { }}
+        <input type="checkbox" name="switch" lay-skin="switch" lay-text="启用|禁用" checked disabled /> 
+        {{# } else if (d.status == 1) { }}
+        <input type="checkbox" name="switch" lay-skin="switch" lay-text="启用|禁用" lay-filter="status" value="{{d.level}}" data-filtered="filtered" checked />
+        {{# } else { }}
+        <input type="checkbox" name="switch" lay-skin="switch" lay-text="启用|禁用" lay-filter="status" value="{{d.level}}" data-filtered="filtered" />
+        {{# } }}
+    {{# } }}
+</script>
+
+<script>
+    layui.config({ base: '/static/admin/' }).use(['table', 'form'], function(){
+        var $ = layui.$ 
+        , table = layui.table
+        , pageTable
+        , form = layui.form
+        , active = {
+            cols: [
+                [{
+                    type: "numbers",
+                    title: "#",
+                    width: 60
+                }, {
+                    field: "levelname",
+                    title: "等级名称",
+                    width: 200,
+                    templet: function(d) {
+                        return '<span>' + d.levelname + '</span>' + 
+                            (d.is_default ? `<span class="layui-btn layui-btn-xs layui-btn-default" style="margin-left: 6px;zoom: .8;">默认</span>` : '');
+                    }
+                }, {
+                    field: "total_num",
+                    title: "当前人数",
+                    width: 100
+                }, {
+                    field: "status",
+                    title: "状态",
+                    width: 90,
+                    align: 'center',
+                    templet: '#table-status'
+                }, {
+                    field: "remark",
+                    title: "备注"
+                }, {
+                    title: "操作",
+                    width: 150,
+                    toolbar: "#table-tool"
+                }]
+            ],
+            add(e){
+                location.href = "{:url('memberLevelAdd')}?level=" + e.data.level;
+            },
+            edit(e) {
+                location.href = "{:url('memberLevelEdit')}?level=" + e.data.level;
+            },
+            del(e) {
+                top.layer.confirm('您确定要删除该等级？', {
+                    title: '友情提示',
+                    icon: 3,
+                    btn: ['是的', '再想想']
+                }, function(i) {
+                    top.layer.close(i),
+                    ns.silent("{:url('memberLevelDel')}", {level: e.data.level}, res => {
+                        if (res.code == 0) {
+                            setTimeout(() => pageTable.reload(), 100)
+                        } else {
+                            layer.alert(res.message)
+                        }
+                    })
+                });
+            },
+            render() {
+                pageTable = table.render({
+                    elem: "#LAY-list-table",
+                    url: location.href + '?_=' + (new Date()).getTime(),
+                    toolbar: '#table-toolbar',
+                    cols: active.cols,
+                    response: { msgName: 'message' },
+                    page: false,
+                    height() {
+                        var _ph = $('#LAY-list-table').parent().height();
+                        var _rh = _ph - 57;
+                        console.log(_ph);
+                        return _rh;
+                    },
+                    text: { none: "无数据" },
+                    parseData: function(res) {
+                        return {
+                            code: res.code,
+                            msg: res.message,
+                            count: res.data.count,
+                            data: res.data.list
+                        }
+                    },
+                    done: function() {
+                        ns.page = this.page.curr;
+                    }
+                }),
+
+                table.on('toolbar(LAY-list-table)', function(o) {
+                    active[o.event] ? active[o.event].call(this, o) : '';
+                }),
+
+                table.on("tool(LAY-list-table)", function(e) {
+                    active[e.event] ? active[e.event].call(this, e) : '';
+                }),
+
+                table.on("pagebar(LAY-list-table)", function(e) {
+                    console.log(e);
+                })
+            },
+            status(level, status) {
+                ns.silent("{:url('memberLevelStatus')}?level=" + level, {status: status?1:0});
+            },
+            refresh(o) {
+                var othis = $(this).find('div'), anim = othis.data('anim');
+                if (!othis.hasClass(anim)) {
+                    othis.removeClass(anim);
+                    othis.addClass(anim);
+                    setTimeout(() => {
+                        pageTable.reload(),
+                        othis.removeClass(anim)
+                    }, 1300)
+                }
+            }
+        };
+
+        form.on('switch(status)', function(obj){
+            active.status(obj.value, obj.elem.checked)
+        }),
+        form.on('submit(LAY-btn-search)', function(data){
+            var field = data.field;
+            table.reload('LAY-list-table', { 
+                where: field,
+                page: { curr: 1 }
+            });
+            return false;
+        }),
+
+        window.addEventListener("load", function() {
+            active.render()
+        });
+    })
+</script>
+{/block}

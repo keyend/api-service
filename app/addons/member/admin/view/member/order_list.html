@@ -1,0 +1,147 @@
+{extend name="$base" /}
+{block name="main"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="LAY-list-table" lay-filter="LAY-list-table"></table>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<!-- 工具栏 -->
+<script type="text/html" id="table-toolbar">
+    <span class="layui-btn-group" style="margin-left: -15px;">
+        <button class="layui-btn layui-btn-sm layui-btn-primary layui-border" lay-event="refresh">
+            <div data-anim="layui-anim-rotate"><i class="layui-icon layui-icon-refresh"></i></div>
+        </button>
+    </span>
+</script>
+<!-- 操作 -->
+<script type="text/html" id="table-tool">
+    <div class="layui-btn-list">
+    </div>
+</script>
+<!-- 状态 -->
+<script type="text/html" id="table-status">
+    {{# if(d.order_status == 2) { }}
+    <span class="layui-btn layui-btn-xs">已支付</span>
+    {{# } else if(d.order_status == 3) { }}
+    <span class="layui-btn layui-btn-xs layui-bg-orange">已取消</span>
+    {{# } else { }}
+    <span class="layui-btn layui-btn-xs layui-bg-blue">待支付</span>
+    {{# } }}
+</script>
+
+<script>
+    var member_id = {$Request.get.id};
+
+    layui.config({ base: '/static/admin/' }).use(['table', 'form'], function(){
+        var $ = layui.$ 
+        , table = layui.table
+        , pageTable
+        , form = layui.form
+        , active = {
+            cols: [
+                [{
+                    type: "numbers",
+                    title: "#",
+                    width: 60
+                }, {
+                    field: "out_trade_no",
+                    title: "订单编号",
+                    width: 200
+                }, {
+                    field: "order_type_name",
+                    title: "订单类型",
+                    width: 100
+                }, {
+                    field: "order_money",
+                    title: "费用",
+                    width: 100
+                }, {
+                    field: "create_time",
+                    title: "下单时间",
+                    width: 160
+                }, {
+                    field: "order_status",
+                    title: "订单状态",
+                    width: 160,
+                    templet: '#table-status'
+                }, {
+                    field: "order_remark",
+                    title: "补充说明"
+                }]
+            ],
+            render() {
+                pageTable = table.render({
+                    elem: "#LAY-list-table",
+                    url: location.href + '&_=' + (new Date()).getTime(),
+                    toolbar: '#table-toolbar',
+                    cols: active.cols,
+                    response: { msgName: 'message' },
+                    where: { member_id: member_id },
+                    page: !0,
+                    limit: 100,
+                    limits: [100, 200, 300, 500],
+                    height: "full-220",
+                    skin: 'line',
+                    text: { none: "无数据" },
+                    parseData: function(res) {
+                        return {
+                            code: res.code,
+                            msg: res.message,
+                            count: res.data.count,
+                            data: res.data.list
+                        }
+                    },
+                    done: function() {
+                        ns.page = this.page.curr;
+                    }
+                }),
+
+                table.on('toolbar(LAY-list-table)', function(o) {
+                    active[o.event] ? active[o.event].call(this, o) : '';
+                }),
+
+                table.on("tool(LAY-list-table)", function(e) {
+                    active[e.event] ? active[e.event].call(this, e) : '';
+                }),
+
+                table.on("pagebar(LAY-list-table)", function(e) {
+                    console.log(e);
+                })
+            },
+            refresh(o) {
+                var othis = $(this).find('div'), anim = othis.data('anim');
+                if (!othis.hasClass(anim)) {
+                    othis.removeClass(anim);
+                    othis.addClass(anim);
+                    setTimeout(() => {
+                        pageTable.reload(),
+                        othis.removeClass(anim)
+                    }, 1300)
+                }
+            }
+        };
+
+        form.on('submit(LAY-btn-search)', function(data){
+            var field = data.field;
+            table.reload('LAY-list-table', { 
+                where: field,
+                page: { curr: 1 }
+            });
+        }),
+
+        form.on('submit(LAY-btn-reset)', function(data){
+            var field = data.field;
+            table.reload('LAY-list-table', { 
+                where: {},
+                page: { curr: 1 }
+            });
+        }),
+
+        window.addEventListener("load", function() {
+            active.render()
+        });
+    })
+</script>
+{/block}

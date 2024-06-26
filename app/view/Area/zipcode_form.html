@@ -1,0 +1,155 @@
+{extend name="base" /}
+{block name="resources"}
+    <link rel="stylesheet" href="/static/cascader/cascader/cascader.css?_={$version}" />
+    <script src="/static/cascader/cascader/cascader.js?_={$version}"></script>
+    <style>
+        .el-cascader {
+            line-height: 32px;
+        }
+        .el-input__inner {
+            height: 32px;
+            list-style: 32px;
+        }
+    </style>
+{/block}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            <div class="layui-row layui-col-space10 layui-form-item">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">所在区域：</label>
+                    <div class="layui-input-block">
+                        <input type="hidden" name="province" id="province" value="{$edit.province??''}" />
+                        <input type="hidden" name="city" id="city" value="{$edit.city??''}" />
+                        <input type="hidden" name="district" id="district" value="{$edit.district??''}" />
+                        <input id="cascader" />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">街道地址：</label>
+                    <div class="layui-input-block">
+                        <div id="street">
+                            <select name="address" id="address">
+                                <option value="{$edit.address??''}" selected="selected">{$edit.address??''}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">邮编：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="code" maxlength="32" autocomplete="off" class="layui-input" value="{$edit.code??''}" />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/html" id="form-address">
+    <select name="address" id="address" {{# if (d.selected) { }}disabled="true"{{# } }}>
+        <option value=""></option>
+        {{# d.list.forEach(function(v) { }}
+            {{# if (d.address == v.areaname) { }}
+            <option value="{{v.areaname}}" selected>{{v.areaname}}</option>
+            {{# } else { }}
+            <option value="{{v.areaname}}">{{v.areaname}}</option>
+            {{# } }}
+        {{# }) }}
+    </select>
+</script>
+<script>
+    const info = {$edit|json_encode|raw};
+
+    layui.use(['form', 'layCascader', 'laytpl'], function(){
+        var $ = layui.$
+        , form = layui.form
+        , cascader = layui.layCascader
+        , laytpl = layui.laytpl
+        , selected_value = null
+        , selected_options = []
+        , selected = false
+        , address;
+
+        info.id && (
+            selected_options = [{
+                value: info.province,
+                label: info.province,
+                children: [{
+                    value: info.city,
+                    label: info.city,
+                    children: [{
+                        value: info.district,
+                        label: info.district
+                    }]
+                }]
+            }],
+            selected_value = info.district,
+            selected = true
+        ),
+        address = cascader({
+            elem: '#cascader',
+            extendClass: 'layui-cascader',
+            clearable: true,
+            options: selected_options,
+            value: selected_value,
+            disabled: selected,
+            props: {
+                lazy: true,
+                lazyLoad: function(node, resolve) {
+                    var level = node.level, param = {};
+                    if (!node.root)param['pname'] = node.data.value;
+                    $.getJSON('/api/area/list', param, function(r) {
+                        if (r.code === 0) {
+                            resolve(r.data.list.map(function(v) {
+                                return {
+                                    value: v.areaname,
+                                    label: v.areaname,
+                                    leaf: level >= 1
+                                }
+                            }));
+                        }
+                    })
+                }
+            }
+        }),
+
+        address.changeEvent(function(value, node) {
+            $.getJSON('/api/area/list', {pname: value}, function(r) {
+                if (r.code === 0) {
+                    var template = document.getElementById('form-address').innerHTML;
+                    laytpl(template).render({
+                        address: info.address,
+                        selected: selected,
+                        list: r.data.list
+                    }, function(html) {
+                        $('#street').html(html),
+                        form.render()
+                    })
+                }
+            }),
+
+            $('#province').val(node.parentNode.parentNode.data.label),
+            $('#city').val(node.parentNode.data.label),
+            $('#district').val(node.data.label)
+        }),
+
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                ns.close(res)
+            });
+            return false;
+        }),
+
+        form.render()
+    });
+</script>
+{/block}

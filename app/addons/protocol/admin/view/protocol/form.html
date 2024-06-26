@@ -1,0 +1,63 @@
+{extend name="$base" /}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            <div class="layui-row layui-col-space10 layui-form-item">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">接口名：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="protocol" maxlength="32" autocomplete="off" class="layui-input" value="{$item.protocol ?? ''}" />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">接口：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="uri" maxlength="32" autocomplete="off" class="layui-input" value="{$item.uri ?? ''}" />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">请求方式：</label>
+                    <div class="layui-input-block">
+                        <select name="method" lay-filter="method">
+                            <option value="GET">GET</option>
+                            <option value="POST" {if isset($item.method) && $item.method == 'POST'} selected{/if}>POST</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注：</label>
+                    <div class="layui-input-block">
+                        <textarea 
+                            class="layui-textarea" 
+                            name="remark" 
+                            placeholder="" 
+                            style="height: 80px"
+                        >{$item.remark ?? ''}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form;
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                ns.close(res)
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

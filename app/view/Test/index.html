@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Test</title>
+    <meta name="renderer" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="/static/layui-v2.9.10/layui/css/layui.css" media="all">
+    <script src="/static/layui-v2.9.10/layui/layui.js"></script>
+    <style>
+        .layui-wrapper {
+            padding: 20px;
+        }
+        .mt-10 {
+            margin-top: 10px;
+        }
+        .btn-call {
+            margin-right: 10px;
+        }
+        .btn-call:disabled {
+            opacity: .6;
+        }
+    </style>
+</head>
+<body class="layui-wrapper">
+    <div class="layui-collapse" lay-accordion>
+        {foreach $protocol_list as $i => $protocol}
+        <div class="layui-colla-item">
+            <div class="layui-colla-title">{$protocol.uri}</div>
+            <div class="layui-colla-content{if $i == 0} layui-show{/if}">
+                {$protocol.remark}
+                <div class="text-left mt-10">
+                    <button
+                        type="button"
+                        class="layui-btn layui-btn-sm btn-call"
+                        data-method="{$protocol.method|strtolower}"
+                        data-uri="/api{$protocol.uri}"
+                        data-param = '{$protocol.para|json_encode|raw}'
+                    >调用</button>
+                    <span class="loading"></span>
+                    <div class="result"></div>
+                </div>
+            </div>
+        </div>
+        {/foreach}
+    </div>
+    <script>
+        layui.use(['form'], function() {
+            var $ = layui.$;
+
+            $('.btn-call').on('click', function() {
+                var $this = $(this), method = $this.data('method'), uri = $this.data('uri');
+                if ($this.attr('disabled') != undefined) {
+                    return false;
+                }
+
+                $this.attr('disabled', true);
+                $this.next().addClass('layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop'),
+                $[method]({
+                    url: uri,
+                    dataType: 'json',
+                    data: $this.data('param'),
+                    success(r) {
+                        typeof(r) == 'string' && (r = JSON.parse(r));
+                        $this.next().next().html(JSON.stringify(r)),
+                        $this.next().attr('class', 'loading'),
+                        $this.removeAttr('disabled')
+                    }
+                })        
+            })
+        })
+    </script>
+</body>
+</html>

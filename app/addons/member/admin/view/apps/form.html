@@ -1,0 +1,79 @@
+{extend name="$base" /}
+{block name="resources"}
+<style>
+    .layui-card-body > .layui-form {
+        padding-right: 1.2rem;
+    }
+    .layui-layout-body > .layui-card {
+        height: 100%;
+    }
+    .layui-form-label.must::after {
+        content: "*";
+        color: red;
+        position: absolute;
+        right: 10px;
+    }
+</style>
+{/block}
+{block name="body"}
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" lay-filter="component-form-element">
+            <div class="layui-row layui-col-space10 layui-form-item">
+                {if isset($item['id'])}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">应用名称：</label>
+                    <div class="layui-input-block">
+                        <input type="text" maxlength="32" autocomplete="off" class="layui-input" value="{$item.app_name ?? ''}" readonly />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">key：</label>
+                    <div class="layui-input-block">
+                        <input type="text" maxlength="32" autocomplete="off" class="layui-input" value="{$item.app_key ?? ''}" readonly />
+                    </div>
+                </div>
+                {else}
+                <div class="layui-form-item">
+                    <label class="layui-form-label must">应用名称：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="app_name" maxlength="32" autocomplete="off" class="layui-input" value="{$item.app_name ?? ''}" lay-verify="required" />
+                    </div>
+                </div>
+                {/if}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注：</label>
+                    <div class="layui-input-block">
+                        <textarea 
+                            class="layui-textarea" 
+                            name="remark" 
+                            placeholder="" 
+                            style="height: 80px"
+                        >{$item.remark ?? ''}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form;
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                ns.close(res)
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

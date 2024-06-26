@@ -12,7 +12,7 @@ use think\facade\Log;
 
 class JobManager
 {
-    protected static $name = 'JobManager';
+    protected static $name = 'JobManager_101';
 
     /**
      * 消费消息

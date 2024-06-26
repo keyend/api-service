@@ -1,0 +1,117 @@
+{extend name="$base" /}
+{block name="resources"}
+    <style>
+        .required { color: red; }
+        .list-conditions {padding: 12px; border: 1px dashed rgb(253, 200, 200);}
+    </style>
+{/block}
+{block name="main"}
+<form class="layui-card layui-form" action="" lay-filter="component-form-element">
+    <div class="layui-card-header">
+        <span class="card-title">基础信息</span>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-form-item">
+            <label class="layui-form-label"><span class="required">*</span>等级名称：</label>
+            <div class="layui-input-block len-long">
+                <input name="levelname" value="{$item.levelname ?? ''}" type="text" lay-verify="required" class="layui-input len-long" maxlength="40" />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">等级说明：</label>
+            <div class="layui-input-block len-long">
+                <textarea name="remark" class="layui-textarea" maxlength="150">{$item.remark ?? ''}</textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">自动升级：</label>
+            <div class="layui-input-block len-long">
+                <input
+                    type="checkbox" 
+                    name="is_upgrade" 
+                    lay-skin="switch" 
+                    lay-text="启用|关闭" 
+                    lay-filter="is_upgrade" 
+                    value="1" 
+                    {if isset($item.is_upgrade) && $item.is_upgrade == 1}
+                    checked
+                    {/if}
+                />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">所需成长：</label>
+            <div class="layui-input-inline layui-input-wrap">
+                <input type="number" name="growth" placeholder="0.00" autocomplete="off" class="layui-input" value="{$item.growth ?? ''}" />
+            </div>
+            <div class="layui-form-mid layui-text-em">升级到当前等级最基本的成长条件</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">默认级别：</label>
+            <div class="layui-input-block len-long">
+                <input
+                    type="checkbox" 
+                    name="is_default" 
+                    lay-skin="switch" 
+                    lay-text="启用|关闭" 
+                    lay-filter="is_default" 
+                    value="1" 
+                    {if isset($item.is_default) && $item.is_default == 1}
+                    checked
+                    {/if}
+                />
+            </div>
+        </div>
+    </div>
+    <div class="layui-card-header">
+        <span class="card-title">升级附加条件</span>
+    </div>
+    <div class="layui-card-body">
+        <div class="list-conditions">
+            {php}$conditons = event('AgentUpgradeCondition', $item);{/php}
+            {foreach $conditons as $v}
+                {$v|raw}
+            {/foreach}
+        </div>
+    </div>
+    <div class="layui-card-header">
+        <span class="card-title">等级权益</span>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-form-item">
+            <label class="layui-form-label">奖励金额：</label>
+            <div class="layui-input-inline layui-input-wrap">
+                <input type="number" name="give_money" placeholder="0.00" autocomplete="off" class="layui-input" value="{$item.give_money ?? ''}" />
+            </div>
+            <div class="layui-form-mid layui-text-em">升级到当前等级后，给予奖励金额</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">奖励成长：</label>
+            <div class="layui-input-inline layui-input-wrap">
+                <input type="number" name="give_growth" placeholder="0.00" autocomplete="off" class="layui-input" value="{$item.give_growth ?? ''}" />
+            </div>
+            <div class="layui-form-mid layui-text-em">升级到当前等级后，给予奖励成长值</div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-sm" lay-submit lay-filter="component-form-element">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </div>
+</form>
+{/block}
+{block name="script"}
+<script>
+    layui.use(['form'], function(){
+        var $ = layui.$
+        ,form = layui.form;
+        form.on('submit(component-form-element)', function(obj) {
+            ns.wost(location.href, obj.field, res => {
+                history.go(-1);
+            });
+            return false;
+        });
+    });
+</script>
+{/block}

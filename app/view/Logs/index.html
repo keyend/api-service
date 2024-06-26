@@ -29,7 +29,14 @@
     </div>
 </div>
 {/block}
-{block name="scripts"}
+{block name="script"}
+<script type="text/html" id="table-content">
+    {{# if(d.content == '[NO_TEMPLATE]') { }}
+        <a href="javascript:void(0);" lay-event="template" style="color: rgb(0, 106, 255);">{{=d.content}}</a>
+    {{# } else { }}
+        {{=d.content}}
+    {{# } }}
+</script>
 <script>
     layui.config({ base: '/static/admin/' }).use(['table', 'form'], function(){
         var $ = layui.$ 
@@ -43,7 +50,7 @@
                 {field: "event", title: "操作", width: 140},
                 {field: "username", title: "操作员", width: 100}, 
                 {field: "create_time", title: "时间", width: 160}, 
-                {field: "content", title: "明细"}
+                {field: "content", title: "明细", templet: '#table-content'}
             ]],
             render() {
                 pageTable = table.render({
@@ -55,6 +62,7 @@
                     limit: 20,
                     limits: [20, 50, 200, 500],
                     height: "full-220",
+                    skin: 'line',
                     text: { none: "无数据" },
                     parseData: function(res) {
                         return {
@@ -67,6 +75,15 @@
                     done: function() {
                         ns.page = this.page.curr;
                     }
+                }),
+
+                table.on('tool(LAY-list-table)', function(o) {
+                    active[o.event] ? active[o.event].call(this, o) : '';
+                })
+            },
+            template(o) {
+                ns.open("{:url('sysLogsTemplateAdd')}?name=" + encodeURIComponent(o.data.name) + '&params=' + encodeURIComponent(JSON.stringify(o.data.params)), '添加模板').then(() => {
+                    pageTable.reload();
                 })
             }
         };

@@ -174,9 +174,9 @@
                         </a>
                     </li>
                     {foreach $menus as $k => $v}
-                    {if $v["is_show"]}
+                    {if $v["type"] == 1}
                     <li data-name="template" class="layui-nav-item">
-                        <a href="javascript:;" lay-tips="{$v.label}" lay-direction="{$k}" lay-href="{:addon_url($v)}">
+                        <a href="#{:addon_url($v)}" lay-tips="{$v.label}" lay-direction="{$k}" lay-href="{:addon_url($v)}">
                             {if !empty($v['icon'])}
                             <i class="{$v['icon']}"></i>
                             {else}
@@ -238,6 +238,10 @@
     }).extend({
         boostrap: 'boostrap',
         index: 'lib/index'
-    }).use(['index', 'boostrap', 'form', 'util']);
+    }).use(['index', 'boostrap', 'form', 'util'], function() {
+        ns.init(function() {
+            location.hash != '' && $('a[href="' + location.hash + '"]').trigger('click')
+        });
+    });
 </script>
 {/block}

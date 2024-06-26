@@ -4,11 +4,11 @@
  * 
  * @version 1.0.0
  */
-namespace app\api;
+namespace app\controller\api;
 
 class Index extends ApiBase 
 {
-    public function test()
+    public function index()
     {
         return $this->success();
     }

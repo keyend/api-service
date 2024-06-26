@@ -19,8 +19,9 @@ var ns = {
    * @param {*} data 
    * @param {*} fn 
    */
-  silent(url, data, fn) {
+  silent(url, data, fn, opts) {
     let loading = top.layer.load(2);
+    opts = opts || {},
     layui.$.ajax({
       type: 'POST',
       url: url,
@@ -31,7 +32,8 @@ var ns = {
         if (res.code != 0) {
           top.layer.msg(res.message || res.msg, {time: 2000});
         } else {
-          parent.layer.msg("SUCCESS", {icon: 1, time: 800} , () => typeof(fn)=='function'&&fn.call(this, res))
+          typeof(opts['msg'])=='undefined' && (opts.msg = !0),
+          opts.msg != false ? parent.layer.msg("SUCCESS", {icon: 1, time: 800} , () => typeof(fn)=='function'&&fn.call(this, res)) : typeof(fn)=='function'&&fn.call(this, res)
         }
       }
     })
@@ -78,7 +80,7 @@ var ns = {
    * IFRAME弹窗
    * @returns void
    */
-  open(url, title, size, type) {
+  open(url, title, size, type, offset) {
     return new Promise(resolve => {
       let obj = window.parent;
       this.listener(),
@@ -86,12 +88,16 @@ var ns = {
         id: this.id,
         title: title
       }),
+      console.log(offset);
       obj.layer.open({
         type: type||2
         ,title: title || false
         ,shadeClose: title ? false : true
         ,content: url
         ,area: size||['60%', '60%']
+        ,offset: offset || 'auto'
+        ,anim: offset == 'r' ? 'slideLeft' : 0
+        ,closeBtn: offset ? 0 : 1
         ,end: () => {
           const value = self.parent.ns.values;
           self.parent.ns.values = null,
@@ -163,6 +169,7 @@ var ns = {
    * @param {*} url 
    */
   img(url) {
+    url = url || '';
     if(url.indexOf('://')==-1){
       return location.origin+url
     }else{
@@ -190,48 +197,112 @@ var ns = {
 		})
   },
   /**
+   * 会员选择组件
+   * @param {*} v 
+   */
+  memberSelectRender(v) {
+    let that = $(v), mapper = that.data('mapper')
+    , member_id = that.attr('id');
+
+    try {
+      typeof(mapper) == 'string' && (mapper = JSON.parse(mapper));
+    } catch(e) {
+      throw new Error("[错误] 会员选择组件加入失败", e);
+    }
+
+    function showPopup(fn) {
+      parent.layer.open({
+        type: 2,
+        title: '会员选择',
+        area: ['825px', '515px'],
+        fixed: false,
+        btn: ['保存', '返回'],
+        content: '/member/admin/member/select.html?id=' + member_id,
+        yes: function (index, e) {
+          e = e.find('iframe')[0].contentWindow,
+          e.getCheckItem(obj => typeof(fn)=='function'&&fn.call(e, obj)),
+          parent.layer.close(index)
+        }
+      });
+    }
+
+    that.on('click', function() {
+      showPopup(res => {
+        let elem, $set;
+        Object.keys(mapper).forEach(key => {
+          if (typeof(res[key]) != 'undefined') {
+            elem = $(mapper[key]);
+            if (elem.length > 0) {
+              $set = elem.prop('tagName') == 'INPUT' ? 'val' : 'text',
+              elem[$set](res[key])
+            }
+          }
+        }),
+        member_id = res.member_id,
+        that.attr('data-id', member_id)
+      });
+      return false;
+    })
+  },
+  /**
    * 添加上传组件
    * @param {*} v 
    */
-  imgUploaderRender(v) {
+  albumRender(v) {
     let that = $(v), limit = that.data('limit'), value = that.find('input[type="hidden"]').val();
     let template = $("#uploadImage").html();
     let values = value?value.split(','):[];
-    let data = {
-      list: values,
-      max: limit
-    };
+    let ev = that.data('event');
+    limit -= values.length;
+
+    function data() {
+      return {
+        list: values,
+        max: limit
+      }
+    }
 
     function render() {
       that.find('.inner').empty(),
-      laytpl(template).render(data, function (html) {
+      laytpl(template).render(data(), function (html) {
         that.find('.inner').append(html),
         event()
       })
     }
 
+    function trigger() {
+      if (ev != undefined) {
+        (ev.indexOf('.') != -1 || ev.indexOf('(') != -1) ? eval(ev) : window[ev].call(that[0])
+      }
+    }
+
     function event() {
       that.find('.js-add-image').on('click', function() {
         ns.album(res => {
-          res.forEach(v => data.list.values.length<limit&&data.list.push(v.filepath)),
-          that.find('input[type="hidden"]').val(data.list.join(',')),
-          render()
+          let d = data();
+          res.forEach(v => d.list.values.length<limit&&d.list.push(v.filepath)),
+          that.find('input[type="hidden"]').val(d.list.join(',')),
+          limit = limit - d.list.length,
+          limit < 0 && (limit = 0),
+          render(),
+          trigger(d.list)
         }, limit)
       }),
 
       that.find('[layer-src]').on('click', function(){
         let img = this,layout = img.parentNode;
         !layout.id&&(layout.id='img_' + (new Date()).getTime(),layout.setAttribute('id', layout.id)),
-        layer.photos({ photos: {
-          start: 0,
-          data: [
-            {
-              pid: 1,
+        top.layer.photos({
+          photos: {
+            title: "Photos Demo",
+            start: 0,
+            data: [{
+              pid: 0,
               src: img.src,
               thumb: img.src
-            }
-          ]
-        }, anim: 5 });
+            }]
+          }, anim: 5
+        })
       }),
 
       that.find('.js-preview').on('click', function() {
@@ -239,9 +310,10 @@ var ns = {
       }),
 
       that.find('.js-delete').on('click', function() {
-				let index = this.getAttribute("data-index");
-        data.list.splice(index, 1),
-        that.find('input[type="hidden"]').val(data.list.join(',')),
+				let index = this.getAttribute("data-index"), d = data();
+        d.list.splice(index, 1),
+        that.find('input[type="hidden"]').val(d.list.join(',')),
+        limit += 1,
         render()
       })
     }
@@ -274,7 +346,8 @@ var ns = {
    * @returns void
    */
   view() {
-    $('.image-uploader').each((i,v) => this.imgUploaderRender(v))
+    $('.image-uploader').each((i,v) => this.albumRender(v)),
+    $('.ns-member-select').each((i,v) => this.memberSelectRender(v))
   },
 
   /**
@@ -305,12 +378,54 @@ var ns = {
    * 表单初始化
    * @returns void
    */
-  init() {
-	  layui.use(['laytpl', 'layer'], () => {
+  init(fn) {
+	  layui.use(['laytpl', 'layer', 'util'], () => {
       window.$ = layui.$,
       window.laytpl = layui.laytpl,
       this.register(),
-      this.view()
+      this.view(),
+      typeof(fn) === 'function' && fn()
     })
+  },
+
+  /**
+   * 引入JS文件
+   * @param {*} url 
+   */
+  requireJs(url) {
+    var script = document.createElement("script");
+    script.src = url,
+    document.body.appendChild(script)
+  },
+
+  /**
+   * 引入CSS文件
+   * @param {*} url 
+   */
+  requireCss(url) {
+    var link = document.createElement('link');
+    link.type = 'text/css';
+    link.rel = 'stylesheet';
+    link.href = url;
+    document.body.appendChild(link)
+  },
+
+  /**
+   * 引用外部插件
+   * @param {*} url 
+   */
+  require(ps) {
+    try {
+      typeof(window['jQuery'])=='undefined' && (window['jQuery'] = window['$'] = layui.$),
+      Object.keys(ps).forEach(k => {
+        if (typeof($.fn[k]) == 'undefined') {
+          $.fn[k] = true,
+          ps[k].forEach(url => {
+            let s = url.split('/').pop();
+            s.substr(-3) == '.js' ? this.requireJs(url) : s.substr(-3) == 'css' ? this.requireCss(url) : void(0);
+          })
+        }
+      })
+    } catch (e) {}
   }
 }

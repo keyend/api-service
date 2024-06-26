@@ -7,12 +7,12 @@
                     <img src="{{ns.img(d.list[i])}}" layer-pid="{{i}}" layer-src />
                 </div>
                 <div class="operation">
-                    <i title="图片预览" class="iconfont icon-eye js-preview"></i>
+                    <i title="图片预览" class="layui-icon layui-icon-eye js-preview" lay-on="gallery"></i>
                     <i title="删除图片" class="layui-icon layui-icon-delete js-delete" data-index="{{i}}"></i>
                 </div>
             </div>
         {{# } }}
-        {{# if(d.list.length < d.max){ }}
+        {{# if(d.max > 0){ }}
             <div class="item js-add-image">
                 <i class="layui-icon layui-icon-upload"></i>
             </div>
