@@ -23,6 +23,14 @@ php think queue:listen --queue JobManager_101
 * 写法支持二次扩展
 * 全新的事件系统
 
+![添加会员](/public/static/images/snap/01.png)
+![添加标签](/public/static/images/snap/02.png)
+![会员等级](/public/static/images/snap/03.png)
+![会员套餐](/public/static/images/snap/04.png)
+![消息订单](/public/static/images/snap/05.png)
+![财务记录](/public/static/images/snap/06.png)
+![调用记录](/public/static/images/snap/06.png)
+
 ## 扩展
 
 如需更多支持，请联系 keyend@163.com
